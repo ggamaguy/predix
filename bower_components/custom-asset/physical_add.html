@@ -1,0 +1,80 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+
+<script src="../moment/min/moment.min.js"></script>
+
+<dom-module id="my-physical-add-card">
+  <template>
+    <px-card header-text={{title}}>
+      <div class="card-header-link layout layout--right">
+        <div class="layout__item u-1/6">
+          <div style="width:100%; text-align:right;">
+            <button class="btn" id="submit" on-click="submitData">저장</button>&nbsp; &nbsp;
+          </div>
+          사업장 &nbsp;<select id="add_site"><option value="default">전체</option></select>&nbsp; &nbsp;
+          물리량 코드 &nbsp;<input type="text" id="physical_code" />&nbsp; &nbsp;
+          물리량 명 &nbsp;<input type="text" id="physical_name" />&nbsp; &nbsp;
+          타입 &nbsp;<select id="type">
+            <option value="Number">Number</option>
+            <option value="Char">Character</option>
+          </select>&nbsp; &nbsp;
+          공통 여부 &nbsp;<input type="checkbox" id="common_check" on-click="commonCheck" checked="true"/>
+          필수 입력 여부 &nbsp;<input type="checkbox" id="essential_check" on-click="essentialCheck" checked="true"/>
+          <br></br>
+          SPEC 자릿수 &nbsp;<input type="text" id="spec_point" />&nbsp; &nbsp;
+          소수점 이하 자릿수 &nbsp;<input type="text" id="decimal_point" />&nbsp; &nbsp;
+          음수 허용 여부 &nbsp;<input type="checkbox" id="negative_num_check" on-click="negativeNumCheck" checked="true"/>
+        </div>
+      </div>
+    </px-card>
+  </template>
+</dom-module>
+
+<script>
+Polymer({
+  is: 'my-physical-add-card',
+  properties: {
+    identifyUri: {
+      type: String
+    }
+  },
+  init: function() {
+    this.hideCard();
+  },
+  ready: function() {
+    // var self = this;
+    // self.getPhysicalData('/codeinstance');
+  },
+  getPhysicalData: function(uri) {
+    var self = this;
+
+    var select_site = document.getElementById("add_site");
+    this.setDataToList(uri+"/site",select_site, null);
+
+  },
+  submitData: function() {
+    var self = this;
+    self.updateDeck({'command': 'submit'});
+  },
+/*
+  self.getPhysicalData('/api/list/code');
+},
+getPhysicalData: function(uri) {
+  var self = this;
+
+  var select_site = document.getElementById("site");
+
+  this.setDataToList(uri+"/site",select_site, null);
+},
+*/
+  deckStateChanged: function(newState, oldState) {
+    var self = this;
+    self.identifyUri = newState.command;
+    if(self.identifyUri == "new") {
+      self.showCard();
+      self.getPhysicalData('/api/list/code');
+    }
+  },
+  behaviors: [px.card]
+});
+</script>

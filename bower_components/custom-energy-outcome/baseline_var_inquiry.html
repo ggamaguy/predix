@@ -1,0 +1,112 @@
+<link rel="import" href="../polymer/polymer.html" />
+<link rel="import" href="../px-card/px-card.html" />
+<link rel="import" href="../px-modal/px-modal.html"/>
+<link rel="import" href="../px-theme/px-theme.html"/>
+
+
+<dom-module id="my-energy-variable-manage-inquiry-card">
+  <template>
+    <px-card header-text={{title}}>
+    
+     <div class="btn-group" style="text-align:right; width:100%; padding-bottom:30px">
+              <span>
+                <button class="btn" id="var_inquiry" on-click="inquiryVariable">변수조회</button>
+              </span>
+        </div>
+			<span style='margin:5px;'>사업장</span> <select id="site"><option value="">선택</option></select>
+      <span style='margin:5px;margin-left:15px;'>부문종류</span>
+      <select class="inputBox selectInputBox" id="team" on-change="findSubTeam">
+        <option value="">선택</option>
+        <option value="SUB-TEAM">조직</option>
+        <option value="FACILITY-MASTER">설비</option>
+        <option value="ENERGY-USAGE">에너지이용</option>
+        <option value="FUNCTIONAL-LOCATION">기능위치</option>
+      </select>
+      <span style='margin:5px;margin-left: 10px;'>부문명</span> <select class="inputBox selectInputBox" id="sub_team">
+      <option value="">선택</option></select>
+      <span style='margin:5px;margin-left: 10px;'>에너지원</span> <select id="physics"></select>
+      <span style='margin:5px;margin-top: 10px;'>주기</span>
+      <select id="cycle">
+        <option value="DAY">일</option>
+        <option value="WEEK">주</option>
+        <option value="MONTH">월</option>
+        <option value="YEAR">년</option>
+      </select>
+      <span style='margin:5px;margin-top:10px;margin-left:15px;'>Baseline</span>
+      <px-datetime-range-field range='{"from":"2016-07-01T01:00:00.000Z","to":"2016-07-08T14git :00:00.000Z"}'
+        date-format="YYYY/MM/DD"
+        time-format="hh:mm:ss A"
+        hide-time=true
+        block-future-dates="true"
+        show-time-zone="text" time-zone="UTC" is-valid="true">
+      </px-datetime-range-field>
+     
+
+    	</px-card>
+  </template>
+</dom-module>
+<script>
+  Polymer({
+    is: 'my-energy-variable-manage-inquiry-card',
+
+  	 ready: function() {
+				this.getMasterData('/api/list');
+	 },
+
+    getMasterData: function(uri){
+			var self = this;
+
+        var site = document.getElementById("site");
+  			var unit = document.getElementById("physics");
+
+  			this.setDataToList(uri+"/code/site", site, null);
+  			this.setDataToList(uri+"/physics", unit, null);
+	 },
+   findSubTeam: function(list){
+     var uri = "/api/list";
+
+     console.log(list.target.value);
+     var subTeam = document.getElementById("sub_team");
+     subTeam.options.length=0;
+     this.setDataToList(uri+"/terminal/"+list.target.value , subTeam, null);
+   },
+
+	inquiryVariable: function(){
+			var self = this;
+
+			px.dealer.httpRequest({
+					url: '/api/asset/' + self.variableInquiryUri,
+					method: 'POST',
+					data: this.buildQuery(),
+			}).then(function(data){
+			console.log("post?", data);
+			alert("정상적으로 등록되었습니다.");
+			window.location.reload();
+		});
+	 },
+
+	 buildQuery: function(){
+			var self = this;
+			var input_variable_site = document.getElementById("site");
+			var input_variable_frequency = document.getElementById("frequency");
+			var input_variable_biasisField = document.getElementById("biasisField");
+			var input_variable_biasisTeam = document.getElementById("biasisTeam");
+			var input_variable_energySource = document.getElementById("energySource");
+			var input_variable_site = document.getElementById("check_start_time");
+			var input_variable_site = document.getElementById("check_end_time");
+
+
+
+   	var query = [ {
+   					//변수 조회 uri 쿼리문 작성 필요
+   			}
+   		]
+
+   		console.log('query', query);
+  			return query;
+
+	},
+
+    behaviors: [px.card]
+  });
+</script>

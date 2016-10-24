@@ -1,0 +1,85 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+<link rel="import" href="../px-dropdown/px-dropdown.html"/>
+<link rel="import" href="../px-calendar-picker/px-calendar-picker.html"/>
+<link rel="import" href="../px-datetime-picker/px-datetime-picker.html"/>
+<script src="../moment/min/moment.min.js"></script>
+
+<dom-module id="my-meter-info-card">
+<template>
+<!--<px-card header-text="BASIS INFORMATION">-->
+<px-card header-text={{title}}>
+<div class="card-header-links layout layout--right">
+	<div class="layout__item u-1/6">
+		<div style="width:100%; text-align:right; padding-bottom:30px">
+			<button class="btn" id="newCode" on-click="add_newData">저장</button>
+		</div>
+	사업장 &nbsp;<select id="site"></select>&nbsp;&nbsp;&nbsp;
+	TAG ID &nbsp;<input type="text" id="tag_id">&nbsp;&nbsp;&nbsp;
+	계측기 코드 &nbsp;<input type="text" id="meter_code">&nbsp;&nbsp;&nbsp;
+	계측기 명 &nbsp;<input type="text" id="meter_name">&nbsp;&nbsp;&nbsp;
+	물리량 명 &nbsp;<select id="physics"></select>&nbsp;&nbsp;&nbsp;
+	가상개소여부 &nbsp;<input type="checkbox" id="virtual" on-click="virtual_check"><br>
+
+
+    </div>
+</div>
+</px-card>
+</template>
+</dom-module>
+
+<script>
+Polymer({
+	is: 'my-meter-info-card',
+	properties: {
+		identifyUri: {
+			type: String
+		},
+		arr_energy: {
+			type: Array,
+			notify: true
+		}
+	},
+
+
+    // initialization
+		ready: function() {
+			//this.hideCard();
+			this.getMasterData('/api/list');
+    },
+
+   getMasterData: function(uri){
+		var self = this;
+
+		var site = document.getElementById("site");
+		var physics = document.getElementById("physics");
+    this.setDataToList(uri+"/code/site",site, null);
+		this.setDataToList(uri+"/physics",physics, null);
+
+	},
+	virtual_check: function(){
+			var y = document.getElementById("virtual_check");
+
+				if(y.checked = true){
+					console.log("bom");
+				}else{}
+	},
+   new_submitData: function(){
+   	var self = this;
+    	self.updateDeck({'command': 'new' + self.identifyUri});
+
+   },
+	 add_newData: function(){
+		 var self = this;
+	 },
+
+	deckStateChanged: function(newState, oldState) {
+		var self = this;
+	   self.showCard();
+	   console.log("identify", self.identifyUri);
+    },
+
+
+	behaviors: [px.card]
+});
+</script>

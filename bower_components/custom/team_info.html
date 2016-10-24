@@ -1,0 +1,329 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+<link rel="import" href="../px-data-table/px-data-table.html"/>
+<link rel="import" href="../px-data-table/px-data-table-highlight.html"/>
+<link rel="import" href="../px-data-table/px-example-highlight.html"/>
+<script src="../moment/min/moment.min.js"></script>
+
+<dom-module id="my-organization-card">
+<template>
+<px-card header-text={{title}}>
+<div class="card-header-links layout layout--right">
+	<div class="layout__item">
+	코드  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   	<input type="text" id="input-organic-code" value="{{dynamicCode}}" style="background-color: #e2e2e2; padding:5px 0px 0px 10px; border:1px solid; font-size:12pt;" disabled/></br></br>
+	이름  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<input type="text" id="input-organic-name" value="{{dynamicName}}" style="padding:5px 0px 0px 10px; border:1px solid; font-size:12pt;" value=""/></br></br>
+
+	</div>
+</div>
+
+<div class="card-header-links layout layout--right">
+	<div class="layout__item u-1/6">
+	<!-- <span style="float:right">
+		<form>
+			<select on-change="intervalChanged" value="{{refreshInterval}}">
+				<option value="3000">Refresh: 3 sec</option>
+				<option value="5000">Refresh: 5 sec</option>
+				<option value="10000">Refresh: 10 sec</option>
+				<option value="30000">Refresh: 30 sec</option>
+				<option value="-1">Refresh: Never</option>
+			</select>
+		</form>
+    </span>-->
+		<div class="card-header-links layout layout--right">
+		<px-data-table id="siteGrid" table-rows selectable selected-rows={{clickedR}}>
+			<px-data-table-column name="번호"
+							  filterable
+							  sortable>
+				<px-data-highlight highlight-type="row" highlight-value="high" highlight-method="isLongString" import="px-example-highlight.html"></px-data-table-highlight>
+			</px-data-table-column>
+			<px-data-table-column name="코드"
+							  filterable
+							  sortable>
+				<px-data-highlight highlight-type="row" highlight-value="high" highlight-method="isLongString" import="px-example-highlight.html"></px-data-table-highlight>
+			</px-data-table-column>
+			<px-data-table-column name="이름"
+							  filterable
+							  sortable
+							  editable>
+				<px-data-table-highlight highlight-type="row" highlight-value="high" highlight-method="isLongString" import="px-example-highlight.html"></px-data-table-highlight>
+			</px-data-table-column>
+		</px-data-table>
+		</div>
+	</div>
+</div>
+</px-card>
+</template>
+</dom-module>
+
+<script>
+Polymer({
+	is: 'my-organization-card',
+	properties: {
+		gridData: {
+			type: Array,
+			notify: true
+		},
+		refreshInterval: {
+			type: Number,
+			notify: true,
+			value: -1
+		},
+		organicUri: {
+			type: String,
+			reflectToAttributes: true,
+			value: "team",
+			notify: true
+		},
+		clickedR: {
+			type: Object,
+			notify: true
+		},
+
+		dynamicCode: {
+			type: String,
+			value: "코드"
+		},
+		dynamicName: {
+			type: String,
+			value: "이름"
+		},
+		allData: {
+			type: Object,
+			notify: true
+		},
+		assetId: {
+			type: String,
+			notify: true
+ 		},
+		changedData: {
+			type: Object,
+			notify: true
+		},
+		columnData: {
+			type: String,
+			notify: true
+		}
+    },
+
+    // initialization: register cell and row click event listener
+	init: function() {
+		var self = this;
+		this.hideCard();
+		// For now, we'll use a global variable to share state between decks...
+		window.rmdGlobals = window.rmdGlobals || {};
+		this.refreshInterval = window.rmdGlobals.refreshInterval || -1;
+
+		this.$.siteGrid.addEventListener("px-cell-click", function(e){
+			var arr = new Array();
+			arr.push(e.detail.row.row.코드.value);
+			arr.push(e.detail.row.row.이름.value);
+			self.dynamicCode=arr[0];
+			self.dynamicName=arr[1];
+		});
+
+		this.$.siteGrid.addEventListener("px-row-click", function(e){
+			self.clickedR = e.detail.row.row;
+		});
+
+		this.getGridData(this.organicUri);
+    	},
+	// when detached: clear interval
+   detached: function() {
+		// console.log('table card detached.  intervalId: ' + this.intervalId);
+		clearInterval(this.intervalId);
+    },
+   add_newData: function(){
+    	var self = this;
+
+		self.dynamicCode = '코드 자동 부여';
+		self.dynamicName = null;
+
+	},
+
+	updateData: function(){
+		var self = this;
+		var modifyName = document.getElementById("input-organic-name").value;
+		//console.log("ori", modifyName);
+   	var changedName = [{
+   		"op" : "replace",
+   		"path" : "/value",
+   		"value": modifyName
+   	}]
+   //	console.log('arr', changedName);
+		px.dealer.httpRequest({
+			url: '/api/asset' + '/codeinstance/' + self.dynamicCode,
+			method: 'PATCH',
+		   data: changedName
+			//headers: {'':''},
+		}).then(function(data){
+			//console.log("update", data);
+			//console.log(data);
+			alert("수정되었습니다.");
+			window.location.reload();
+		});
+	},
+
+	deleteData: function(){
+	   this.changedData = this.clickedR;
+
+		var changedvalid = [{
+		  	"op" : "replace",
+   		"path" : "/valid",
+   		"value": false
+   		}]
+		px.dealer.httpRequest({
+			url: '/api/asset' + '/codeinstance/' + this.changedData.코드.value,
+			method: 'PATCH',
+			data: changedvalid
+		}).then(function(data){
+			//console.log(data);
+			alert("삭제되었습니다.");
+			window.location.reload();
+		});
+	},
+
+	new_submitData: function(){
+		var self = this;
+
+
+		px.dealer.httpRequest({
+			url: '/api/newCode',
+			method: 'PUT',
+			data: this.buildQuery(),
+			//headers: {'predix-zone-id':'6b0ccc8f-2b05-42d8-96c7-876168487eb0'}
+		}).then(function(data){
+			console.log("post?", data);
+			alert("정상적으로 등록되었습니다.");
+			window.location.reload();
+		});
+	 },
+
+		buildQuery: function(){
+
+		var modifyName = document.getElementById("input-organic-name").value;
+   	var query = {
+  	 	"classification" : "/codeclassification/organization",
+   	"value": modifyName,
+   	"parentCode": ""};
+   		console.log('query', query);
+  			return query;
+
+	},
+
+
+	intervalChanged: function(val) {
+		// console.log('intervalChanged: ' + val.target.value);
+		clearInterval(this.intervalId);
+		var self = this;
+		// update refreshinterval of global value
+		window.rmdGlobals.refreshInterval = val.target.value;
+		// get refreshinterval from selector
+		self.refreshInterval = Number(val.target.value);
+		// broadcast refreshinterval
+		self.updateDeck({refreshInterval: val.target.value});
+		// plot datagrid
+		self.pollGridData(assetUri, self.refreshInterval);
+    },
+
+	// get Data from 'uri'
+    getGridData: function(uri) {
+		var self = this;
+
+		this.getData('/api/datagrid/code/' + uri).then(function(data) {
+			// update allData
+    		//console.log("data", data);
+			self.allData = data.tableData;
+			var uiColumn = data.columns;
+			var uiData = [];
+			var count = 1;
+			//console.log("column", data.columns[0].label);
+
+		//	for(var i=0, count=1; i<data.tableData.length; i++, count++) {
+		data.tableData.forEach(function(row){
+			var uiRow = {
+					번호 : count
+					};
+
+			data.columns.forEach(function(col){
+			  uiRow[col.label] = row[col.field]; //key:value
+			});
+			count++;
+			uiData.push(uiRow);
+
+		});
+			 self.$.siteGrid.tableData = uiData;
+			//console.log("uiData", uiData);
+		});
+    },
+	pollGridData: function(uri, refreshInterval) {
+		var self = this;
+		self.getGridData(uri);
+
+		// console.log('summary card clearing interval: ' + self.intervalId);
+		clearInterval(self.intervalId);
+		if (refreshInterval > 0) {
+			self.intervalId = setInterval(function() {
+				self.getGridData(uri);
+			}, refreshInterval);
+		}
+		else {
+			self.getGridData(uri);
+		}
+    },
+
+
+	// context is set for px-dashboard, which updates px-deck, which updates this px-card
+    contextChanged: function(newContext) {
+    	var self = this;
+
+		clearInterval(self.intervalId);
+		self.organicUri = newContext.uri;
+		self.organicUri = "team";
+		if (window.rmdGlobals && window.rmdGlobals.refreshInterval) {
+			self.refreshInterval = window.rmdGlobals.refreshInterval || -1;
+		}
+		self.pollGridData(self.organicUri, self.refreshInterval);
+	},
+
+
+
+	deckStateChanged: function(newState, oldState) {
+		var self = this;
+	   var check = self.organicUri;
+
+		if(newState.clickedInfo == check){
+
+		//this.addGridData(newState.clickedInfo);
+		//this.pollGridData(newState.clickedInfo, 1);
+		this.showCard();
+		}else{
+		this.hideCard();
+		};
+
+
+		if(newState.command == 'new' + check){
+		console.log("new?", 'new' + check);
+		this.add_newData();
+		}
+		else if(newState.command == 'add' + check){
+		console.log("add?")
+		this.new_submitData();
+		}
+		else if(newState.command == 'delete' + check){
+		console.log("delete")
+		this.deleteData();
+		}
+		else if(newState.command == 'update' + check){
+		console.log("update?")
+		this.updateData();
+		}
+		else{
+		};
+    },
+
+
+    behaviors: [px.card]
+});
+</script>

@@ -1,0 +1,72 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+
+<script src="../moment/min/moment.min.js"></script>
+
+<dom-module id="my-facility-btn-card">
+<template>
+<!--<px-card header-text="BASIS INFORMATION">-->
+<px-card header-text={{title}}>
+<div class="card-header-links layout layout--right">
+	<div class="layout__item u-1/6">
+	<br>
+		<div class=btn-group>
+			<span style="float:right">
+				<button class="btn" id="inquiry" on-click="InquiryData">조회</button>
+				<button class="btn" id="newCode" on-click="add_newData">저장</button>
+				<button class="btn" id="all_create" on-click="createAllData">일괄 생성</button>
+			</span>	
+		</div>
+    </div>
+</div>
+</px-card>
+</template>
+</dom-module>
+
+<script>
+Polymer({
+	is: 'my-facility-btn-card',
+	properties: {
+		assetUri: {
+			type: String
+		},
+		identifyUri: {
+			type: String
+		}
+	},
+	
+    // initialization
+	init: function() {	
+			
+    },
+    
+   new_submitData: function(){
+   	var self = this;
+    	self.updateDeck({'command': 'new'});
+		
+   },
+   add_newData: function(){
+   	var self = this;
+		self.updateDeck({'command': 'add'});
+   
+   },
+   deleteData: function(){
+   	var self = this;
+		self.updateDeck({'command': 'delete'});
+   
+   },
+   updateData: function(){
+   	var self = this;
+		self.updateDeck({'command': 'update'});
+   
+   },
+	deckStateChanged: function(newState, oldState) {
+		var self = this;
+	   self.identifyUri = newState.clickedInfo;
+	   console.log("identify", self.identifyUri);
+    },
+	
+  
+	behaviors: [px.card]
+});
+</script>

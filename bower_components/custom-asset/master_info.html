@@ -1,0 +1,201 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+<link rel="import" href="../px-dropdown/px-dropdown.html"/>
+<link rel="import" href="../px-calendar-picker/px-calendar-picker.html"/>
+<link rel="import" href="../px-datetime-picker/px-datetime-picker.html"/>
+<script src="../moment/min/moment.min.js"></script>
+
+<dom-module id="my-master-info-card">
+<template>
+<!--<px-card header-text="BASIS INFORMATION">-->
+<px-card header-text={{title}}>
+
+<div class="card-header-links layout layout--right">
+	<div class="layout__item u-1/6">
+
+	<div class=btn-group  style="text-align:right; width:100%; padding-bottom:30px">
+			<span>
+				<button class="btn" id="inquiry" on-click="inquiryButtonClick">Johoi</button>
+				<button class="btn" id="newSubmit" on-click="new_submitData">추가</button>
+				<button class="btn" id="newCode" on-click="add_newData">저장</button>
+				<button class="btn" id="deleteInform" on-click="deleteData">삭제</button>
+			</span>
+	</div>
+
+	사업장 &nbsp;<select id="site"><option value="default">Total</option></select>&nbsp;&nbsp;&nbsp;
+	설비 코드 &nbsp;<input type="text" id="asset-code">&nbsp;&nbsp;&nbsp;
+	설비 내역 &nbsp;<input type="text" id="asset-list">&nbsp;&nbsp;&nbsp;
+	설비 용량 &nbsp;<input type="capacity" id="" style="width:50px;" maxlength="5" value="{{dynamicCode}}">&nbsp;&nbsp;&nbsp;
+	설비 적용 일자 <px-datetime-picker date-time="2016-09-02T00:00:00.000Z" date-format="YYYY/MM/DD" time-format="hh:mmA" hide-time="true" show-time-zone="none" time-zone="Asia/Seoul"></px-datetime-picker><br><br>
+	조직 &nbsp;<select id="organization" ><option value="">Total</option></select>&nbsp;&nbsp;&nbsp;
+	공정 &nbsp;<select id="process" ><option value="default">Total</option></select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	설비 그룹 &nbsp;<select id="facility_group" ><option value="default">Total</option></select>&nbsp;&nbsp;&nbsp;
+	위치 &nbsp;<select id="location" ><option value="default">Total</option></select>&nbsp;&nbsp;&nbsp;
+	기능 위치 &nbsp;<select id="funcloc"><option value="default">Total</option></select>&nbsp;&nbsp;&nbsp;
+	에너지One &nbsp;<select id="energy_type" multiple="multiple"><option value="default">Total</option></select>
+	<br>
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<select id="team"><option value="default">Select</option></select>&nbsp;&nbsp;&nbsp;
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<select id="sub_process"><option value="default">Select</option></select>&nbsp;&nbsp;&nbsp;
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<select id="sub_facility_group"><option value="default">Select</option></select>&nbsp;&nbsp;&nbsp;
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<select id="sub_location"><option value="default">Select</option></select>&nbsp;&nbsp;&nbsp;
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<select id="sub_funcloc"><option value="default">Select</option></select>&nbsp;&nbsp;&nbsp;
+
+
+
+    </div>
+</div>
+</px-card>
+</template>
+</dom-module>
+
+<script>
+Polymer({
+	is: 'my-master-info-card',
+	properties: {
+		identifyUri: {
+			type: String
+		},
+		arr_energy: {
+			type: Array,
+			notify: true
+		}
+	},
+
+
+    // initialization
+	ready: function() {
+			//this.hideCard();
+			this.getMasterData('/api/list/code');
+
+    },
+
+   getMasterData: function(uri){
+				var self = this;
+
+				var select_site = document.getElementById("site");
+				var select_organize = document.getElementById("organization");
+				var select_team = document.getElementById("team");
+				var select_energy = document.getElementById("energy_type");
+				var select_facility = document.getElementById("facility_group");
+				var select_sub_facility = document.getElementById("sub_facility_group");
+				var select_location = document.getElementById("location");
+				var select_sub_location = document.getElementById("sub_location");
+				var select_process = document.getElementById("process");
+				var select_sub_process = document.getElementById("sub_process");
+				var select_funcloc = document.getElementById("funcloc");
+				var select_sub_funcloc = document.getElementById("sub_funcloc");
+
+				this.setDataToList(uri+"/site",select_site, null);
+				this.setDataToList(uri+"/team",select_organize, null);
+				this.setDataToList(uri+"/energy-source",select_energy, null);
+				this.setDataToList(uri+"/facility-group",select_facility, null);
+				this.setDataToList(uri+"/location",select_location, null);
+				this.setDataToList(uri+"/process",select_process, null);
+				this.setDataToList(uri+"/functional-location",select_funcloc, null);
+	},
+	new_submitData: function(){
+	 var self = this;
+		 self.updateDeck({'command': 'new'});
+
+	},
+	add_newData: function(){
+	 var self = this;
+	 self.updateDeck({'command': 'add'});
+
+	},
+	deleteData: function(){
+	 var self = this;
+	 self.updateDeck({'command': 'delete'});
+
+	},
+	updateData: function(){
+	 var self = this;
+	 self.updateDeck({'command': 'update'});
+
+	},
+	inquiryButtonClick: function(){
+		var self = this;
+
+		var select_site = document.getElementById("site");
+		var select_organize = document.getElementById("organization");
+		var select_team = document.getElementById("team");
+		var select_energy = document.getElementById("energy_type");
+		var select_facility = document.getElementById("facility_group");
+		var select_sub_facility = document.getElementById("sub_facility_group");
+		var select_location = document.getElementById("location");
+		var select_sub_location = document.getElementById("sub_location");
+		var select_process = document.getElementById("process");
+		var select_sub_process = document.getElementById("sub_process");
+		var select_funcloc = document.getElementById("funcloc");
+		var select_sub_funcloc = document.getElementById("sub_funcloc");
+
+		var asset_code = document.getElementById("asset-code");
+		var asset_list = document.getElementById("asset-list");
+		var parameters = [];
+		parameters.push(select_site.value);
+		parameters.push(select_organize.value);
+		parameters.push(select_team.value);
+		parameters.push(select_energy.value);
+		parameters.push(select_facility.value);
+		parameters.push(select_sub_facility.value);
+		parameters.push(select_location.value);
+		parameters.push(select_sub_location.value);
+		parameters.push(select_process.value);
+		parameters.push(select_sub_process.value);
+		parameters.push(select_funcloc.value);
+		parameters.push(select_sub_funcloc.value);
+
+		var keys = [
+			"site",
+			"team",
+			"sub-team",
+			"energy-source",
+			"facility-group",
+			"sub-facility-group",
+			"location",
+			"sub-location",
+			"process",
+			"sub-process",
+			"functional-location",
+			"sub-functional-location"
+		];
+
+		data = this.makeParameter(parameters, keys);
+		var event = new Object();
+		event.gridCommand = "inquiry";
+		event.parameters = data;
+
+		self.updateDeck(event);
+
+	},
+
+	treemap_func: function(){
+			var x = document.getElementById("treemap");
+				if(x.checked == true){
+
+				}else{}
+	},
+	bom_check: function(){
+			var y = document.getElementById("bom");
+
+				if(y.checked = true){
+					console.log("bom");
+				}else{}
+	},
+   new_submitData: function(){
+   	var self = this;
+    	self.updateDeck({'command': 'new' + self.identifyUri});
+
+   },
+
+	deckStateChanged: function(newState, oldState) {
+		var self = this;
+	   self.showCard();
+
+  },
+
+
+	behaviors: [px.card]
+});
+</script>

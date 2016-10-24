@@ -1,0 +1,67 @@
+<link rel="import" href="../polymer/polymer.html" />
+<link rel="import" href="../px-card/px-card.html" />
+
+<dom-module id="my-energy-variable-model-generator-card">
+  <template>
+    <px-card header-text={{title}}>
+    			<div class="layout">
+     	 		<px-data-table id="energyModelGenerateGrid" striped table-rows></px-data-table>
+					</div>
+					<div class="layout" style="float:right;">
+						<br><br>
+						<button class="btn" id="modelGenerate" on-click:"generateModel">모델산정</button>					
+					</div>    
+    </px-card>
+  </template>
+</dom-module>
+<script>
+  Polymer({
+    is: 'my-energy-variable-model-generator-card',
+    properties: {
+    		identifyUri: {
+      type: String
+    		},
+    gridData: {
+      type: Array,
+      notify: true
+    }
+  },
+  
+  init: function() {
+  },
+  ready: function() {
+    this.getEnergyModelGenerateGridData('uri');
+  },
+  getEnergyModelGenerateGridData: function(uri) {
+    var self = this;
+    self.getData('/api/datagrid' + uri).then(function(data) {
+      self.allData = data.tableData;
+      var uiColumn = data.columns;
+      var uiData = [];
+
+      data.tableData.forEach(function(row) {
+        data.columns.forEach(function(col) {
+          uiRow[col.label] = row[col.field];
+        });
+        uiData.push(uiRow);
+      });
+      self.$.energyModelGenerateGrid.tableData = uiData;
+    });
+  },
+  
+  generateModel : function() {
+			  	 
+  	 },
+  	 
+  deckStateChanged: function(newState, oldState) {
+    var self = this;
+    self.identifyUri = newState.command;
+    if(self.identifyUri == "inquiry") {
+      // draw a table in here.
+    }
+  },
+      
+    
+    behaviors: [px.card]
+  });
+</script>

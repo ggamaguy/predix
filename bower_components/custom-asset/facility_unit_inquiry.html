@@ -1,0 +1,115 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+<link rel="import" href="../px-dropdown/px-dropdown.html"/>
+<script src="../moment/min/moment.min.js"></script>
+
+<dom-module id="my-facility-unit-inquiry-card">
+<template>
+<px-card header-text={{title}}>
+<div class="card-header-links layout layout--right">
+	<div class="layout__item u-1/6">
+		<div class=btn-group style="width:100%; text-align:right; padding-bottom:30px;">
+			<span>
+				<button class="btn" id="inquiry" on-click="inquiryData">조회</button>
+				<button class="btn" id="create_new" on-click="new_unitFacility">신규</button>
+				<button class="btn" id="disable" on-click="disableData">비활성화</button>
+			</span>
+		</div>
+		사업장 &nbsp;<select id="site"><option value="default">전체</option></select>&nbsp;&nbsp;&nbsp;
+		설비 Unit 타입 정보 &nbsp;<select id="unitType"><option value="default">전체</option></select>&nbsp;&nbsp;&nbsp;
+  </div>
+</div>
+</px-card>
+</template>
+</dom-module>
+
+<script>
+Polymer({
+	is: 'my-facility-unit-inquiry-card',
+	properties: {
+		identifyUri: {
+			type: String
+		},
+		arr_energy: {
+			type: Array,
+			notify: true
+		}
+	},
+
+
+    // initialization
+	ready: function() {
+			//this.hideCard();
+			this.getSelectData('/api/list');
+
+    },
+
+   getSelectData: function(uri){
+			var self = this;
+
+		 	var site = document.getElementById("site");
+		 	var unitType = document.getElementById("unitType");
+		 	var physicsInfo = document.getElementById("physicsInfo");
+
+
+			this.setDataToList(uri+"/physics", physicsInfo, null);
+			this.setDataToList(uri+"/code/site", site, null);
+			this.setDataToList(uri+"/facility-unit-type", unitType, null);
+
+    //select_check_classification.options[4] = new Option("설비별", 4);
+
+	},inquiryData: function() {
+    var self = this;
+
+		var site = document.getElementById("site");
+		var unitType = document.getElementById("unitType");
+		var physicsInfo = document.getElementById("physicsInfo");
+
+		var parameters = [];
+		parameters.push(site.value);
+		parameters.push(unitType.value);
+		//parameters.push(physicsInfo.value);
+
+    var keys = [
+			"site", "code", "name"
+    ];
+
+    data = this.makeParameter(parameters, keys);
+		var event = new Object();
+		event.gridCommand = "inquiry";
+		event.parameters = data;
+
+		self.updateDeck(event);
+  },
+
+   new_unitFacility: function(){
+   	var self = this;
+		 //Polymer.dom(document).querySelector("my-energy-consume-team-energy-resource-grid-card").hideCard();
+		// Polymer.dom(document).querySelector("my-facility-unit-add-card").showCard();
+		var command = new Object();
+		command.gridCommand = "new";
+		self.updateDeck(command);
+		console.log("command", command);
+
+   },
+   	disableData: function(){
+				//	비활성화 관련 자바스크립트
+   },
+
+	
+   new_submitData: function(){
+   	var self = this;
+    	self.updateDeck({'command': 'new' + self.identifyUri});
+
+   },
+
+	deckStateChanged: function(newState, oldState) {
+		var self = this;
+	   self.showCard();
+	   console.log("identify", self.identifyUri);
+    },
+
+
+	behaviors: [px.card]
+});
+</script>

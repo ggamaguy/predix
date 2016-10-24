@@ -1,0 +1,86 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+<link rel="import" href="../px-data-table/px-data-table.html"/>
+<link rel="import" href="../px-data-table/px-example-highlight.html"/>
+
+<script src="../moment/min/moment.min.js"></script>
+
+<dom-module id="my-inquiry-card">
+<template>
+<px-card header-text={{title}}>
+<div class="card-header-links layout layout--right">
+    <px-data-table id="meterGrid" striped selectable>
+		<px-data-table-column name="번호"
+							  filterable
+							  sortable>
+			<px-data-highlight highlight-type="row" highlight-value="high" highlight-method="isLongString" import="px-example-highlight.html"></px-data-table-highlight>
+		</px-data-table-column>
+		<px-data-table-column name="메뉴"
+							  filterable
+							  sortable
+							  editable>
+			<px-data-table-highlight highlight-type="row" highlight-value="high" highlight-method="isLongString" import="px-example-highlight.html"></px-data-table-highlight>
+		</px-data-table-column>
+    </px-data-table>
+</px-card>
+</template>
+</dom-module>
+
+<script>
+Polymer({
+	is: 'my-inquiry-card',
+	properties: {
+		gridData: {
+			type: Array,
+			notify: true
+		}
+    },
+
+	init: function() {
+		var self = this;
+		//this.hideCard();
+		this.$.meterGrid.addEventListener("px-cell-click", function(e){
+			var clickedRow = e.detail.row,
+				clickedColumn = e.detail.column;
+			console.log("Cell Clicked, Row=", clickedRow);
+		self.updateDeck({'clickedInfo': self.gridData[clickedRow.row.dataIndex].instance_key});
+		});
+		this.getGridData('/code/getList');
+	},
+
+    detached: function() {
+    },
+
+
+	getGridData: function(uri) {
+
+		var self = this;
+		this.getData('/api/datagrid' + uri).then(function(data) {
+			console.log("Grid data: " + JSON.stringify(data));
+			var uiData = [];
+
+			self.gridData = data.tableData;
+			for(var i=0, count=1; i < data.tableData.length; i++, count++) {
+				var uiRow = {
+					번호: count,
+					메뉴: data.tableData[i].value
+				};
+				uiData.push(uiRow);
+			}
+
+			self.$.meterGrid.tableData = uiData;
+			console.log("uiDATA", uiData);
+		});
+    },
+
+	// context is set for px-dashboard, which updates px-deck, which updates this px-card
+	contextChanged: function(newContext) {
+		// console.log('contextChanged: ' + JSON.stringify(newContext));
+	},
+
+	deckStateChanged: function(newState, oldState) {
+    },
+
+    behaviors: [px.card]
+});
+</script>

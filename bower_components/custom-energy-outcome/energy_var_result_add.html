@@ -1,0 +1,47 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+<link rel="import" href="../px-data-table/px-data-table.html"/>
+<link rel="import" href="../px-data-table/px-example-highlight.html"/>
+
+<dom-module id="energy-var-register-table-right">
+  <template>
+      <px-card header-text={{title}}>
+      <div style="padding-top:30px;"class="card-header-links layout layout--right">
+      <div style="float:left;">
+        <p style="width:100px;margin:auto;">날짜</p>
+      </div>
+      <div style="float:left;">
+        <input style="margin:auto;"type="text" id="apply_date" placeholder="2016.09.25">
+      </div>
+      <div style="clear:both;padding-top:20px;">
+        <px-data-table id="varGrid" tableData={{data}}>
+        <px-data-table-column  name="사업장명"></px-data-table-column>
+        <px-data-table-column  name="부문종류"></px-data-table-column>
+        <px-data-table-column  name="부문명"></px-data-table-column>
+        <px-data-table-column  name="변수명"></px-data-table-column>
+        <px-data-table-column  name="단위"></px-data-table-column>
+        <px-data-table-column  editable name="실적"></px-data-table-column>
+        </px-data-table>
+      </div>
+      </div>
+      </px-card>
+  </template>
+</dom-module>
+<script>
+Polymer({
+  is:'energy-var-register-table-right',
+  properties:{
+    data:{
+      type:Array,
+      notify:true
+    }
+  },
+  init: function(){
+
+  },
+  selectedRow: function(){
+
+  },
+  behaviors: [px.card]
+});
+</script>

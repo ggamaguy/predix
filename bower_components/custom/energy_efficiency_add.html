@@ -1,0 +1,144 @@
+<link rel="import" href="../polymer/polymer.html" />
+<link rel="import" href="../px-card/px-card.html" />
+
+<dom-module id="my-energy-efficiency-add-card">
+  <template>
+    <px-card header-text={{title}}>
+      <div class="layout" style="float:left;">      	
+					<div style='margin:5px;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;사업장</div><br>							
+					<div style='margin:5px;'>효율화 기준항목 코드</div><br>
+					<div style='margin:5px;'>Best Practice 기준값</div> 
+				</div>
+				<div class="layout" style="float:left;">
+					<div style="margin:5px;"><select id="energy_efficiency_insert_site"></select></div>
+					<div style="margin:5px;margin-top:27px;"><input type="text" id="criteria_code"></div>
+					<div style="margin:5px;margin-top:27px;"><input type="text" id="criteria_best_Practice"></div>
+				</div>
+      <div class="layout" style="float:left;">      	
+					<div style='margin:5px;'>설비 Unit Type</div><br>							
+					<div style='margin:5px;'>효율화 기준항목 명</div><br>
+					<div style='margin:5px;'>이상 기준 값</div> 
+				</div>
+				<div class="layout" style="float:left;">
+					<div style="margin:5px;"><select id="energy_efficiency_insert_unit_type"></select></div>
+					<div style="margin:5px;margin-top:27px;"><input type="text" id="criteria_name"></div>
+					<div style="margin:5px;margin-top:27px;"><input type="text" id="criteria_over_value"></div>
+				</div>
+      <div class="layout" style="float:left;">      	
+					<div style='margin:5px;'>정렬코드</div><br>							
+					<div style='margin:5px;'>물리량코드(식)</div><br>
+					<div style='margin:5px;'>이하 기준 값</div> 
+				</div>
+				<div class="layout" style="float:left;">
+					<div style="margin:5px;"><select id="energy_efficiency_insert_order_code"></select></div>
+					<div style="margin:5px;margin-top:27px;"><input type="text" id="physics_code"></div>
+					<div style="margin:5px;margin-top:27px;"><input type="text" id="criteria_under_value"></div>
+				</div>
+    </px-card>
+  </template>
+</dom-module>
+<script>
+  Polymer({
+    is: 'my-energy-efficiency-add-card',
+    
+    	properties: {
+				identifyUri: {
+				type: String
+		}, 	
+			energyEfficiencyAddUri: {
+					type: String,
+					reflectToAttributes: true,
+					value: "/emission-factor",
+					notify: true
+		},
+	},
+	
+  init: function() {
+    this.hideCard();
+  },
+  
+  ready: function() {	
+				this.getMasterData('/codeinstance');
+	},
+			
+		getMasterData: function(uri){
+					var self = this;
+					var arr_site = [];
+					var arr_unitType = [];
+					var arr_orderCode = [];
+				
+					this.getData('/api/asset' + uri).then(function(data) {
+				
+					for(i=0; i<data.length; i++){
+						if(data[i].classification == "/codeclassification/site"){
+								arr_site.push(data[i].value);
+		   		} else if(data[i].classification == "/codeclassification/unittype"){
+		   				arr_unitType.push(data[i].value);
+			   	} else if(data[i].classification == "/codeclassification/ordercode"){
+		   				arr_orderCode.push(data[i].value);
+			   		}
+					}
+			
+		 			var select_site = document.getElementById("energy_efficiency_insert_site");
+		 			var select_unitType = document.getElementById("energy_efficiency_insert_unit_type");
+		 			var select_orderCode = document.getElementById("energy_efficiency_insert_order_code");
+		 			
+		 			for(index in arr_site){
+		 				select_site.options[select_site.options.length] = new Option(arr_site[index], index);
+		 			}
+		 			for(index in arr_unitType){
+		 				select_unitType.options[select_unitType.options.length] = new Option(arr_unitType[index], index);
+		 			}
+		 			for(index in arr_orderCode){
+		 				select_orderCode.options[select_orderCode.options.length] = new Option(arr_orderCode[index], index);
+		 			}
+				});
+			},
+			
+		new_submitData: function(){
+			var self = this;
+			
+			px.dealer.httpRequest({
+					url: '/api/asset/' + self.energyEfficiencyAddUri,
+					method: 'POST',
+					data: this.buildQuery(),
+			}).then(function(data){
+			console.log("post?", data);
+			alert("정상적으로 등록되었습니다.");
+			window.location.reload();
+		});
+	 },
+	 
+	 buildQuery: function(){ 
+			var self = this;
+	
+			var input_energy_order_code = document.getElementById("energy_efficiency_insert_order_code");
+			var input_energy_unit_type = document.getElementById("energy_efficiency_insert_unit_type");
+			var input_energy_site = document.getElementById("energy_efficiency_insert_site");
+			var input_energy_criteria_code = document.getElementById("criteria_code").value;
+			var input_energy_criteria_best_Practice = document.getElementById("criteria_best_Practice").value;
+			var input_energy_criteria_over_value = document.getElementById("criteria_over_value").value;			
+   	var input_energy_criteria_physics_code = document.getElementById("physics_code").value;			
+   	var input_energy_criteria_under_value = document.getElementById("criteria_under_value").value;			
+   	var input_energy_criteria_name = document.getElementById("criteria_name").value;			
+   	
+   	var query = [ {
+   					//에너지 효율 추가 uri 쿼리문 작성 필요
+   			}
+   		]
+   	
+   		console.log('query', query);
+  			return query;
+  
+	},
+			
+	deckStateChanged: function(newState, oldState) {
+		var self = this;
+	   self.showCard();
+	   console.log("identify", self.identifyUri);
+    },
+    
+    behaviors: [px.card]
+  });
+</script>

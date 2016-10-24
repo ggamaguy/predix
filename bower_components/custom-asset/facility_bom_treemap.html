@@ -1,0 +1,80 @@
+<link rel="import" href="../polymer/polymer.html" />
+<link rel="import" href="../px-card/px-card.html" />
+<link rel="import" href="../file-tree-master/file-tree.html"/>
+
+<script src="../webcomponentsjs/webcomponents.js"></script>
+
+<dom-module id="my-facility-bom-master-tree-card">
+  <template>
+    <px-card header-text={{title}}>
+      <file-tree></file-tree>
+    </px-card>
+  </template>
+</dom-module>
+<script>
+  Polymer({
+    is: 'my-facility-bom-master-tree-card',
+
+		 init: function(){
+
+		},
+    getGridData: function(uri, parameter) {
+				var self = this;
+
+		    px.dealer.httpRequest({
+		    url: uri+"/"+parameter,
+		    method: 'GET'
+		    }).then(function(data){
+						console.log("Grid data: " , JSON.stringify( data ));
+
+						document.querySelector("file-tree").data = self.setDataToTree(data);
+						//self.$.file-tree.addEventListener("px-cell-click", function(e){
+						document.querySelector("file-tree").addEventListener("folderSelected", function(e){
+				      var clicked = e.detail.data.description;
+							self.nodeSelected(clicked);
+				    });
+		    });
+		},
+    nodeSelected: function(data){
+      var self = this;
+      console.log(JSON.stringify(data));
+      var parameter = new Object();
+      parameter.gridCommand="setUnit";
+      parameter.code = data.code;
+
+      parameter.detail = data;
+      self.updateDeck(parameter);
+
+    },
+    setDataToTree : function( data ){
+				var self = this;
+				var object = data;
+				var temp = new Object();
+        console.log(JSON.stringify(data));
+				temp.name = data.name;
+				temp.shared = false;
+				temp.open = true;
+
+				temp.children = new Array();
+
+				var children = data.units;
+				for (var child in children){
+					temp.children.push(self.setDataToTree(children[child]));
+				}
+				delete object["units"];
+				temp.description = object;
+				return temp;
+		},
+    deckStateChanged: function(newDeckState, oldDeckState){
+      var tree;
+
+      if(newDeckState.gridCommand == "setTree"){
+        var parameter = newDeckState.parameters;
+
+        console.log("[MinjuneL] sirosiro "+parameter);
+        this.getGridData('/api/tree/facility-unit', parameter);
+      }
+    },
+    behaviors: [px.card]
+  });
+</script>

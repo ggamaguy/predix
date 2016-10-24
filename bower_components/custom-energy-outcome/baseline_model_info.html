@@ -1,0 +1,132 @@
+<link rel="import" href="../polymer/polymer.html" />
+<link rel="import" href="../px-card/px-card.html" />
+
+<dom-module id="my-energy-variable-model-info-card">
+  <template>
+    <px-card header-text={{title}}>
+      <div class="layout">
+      <div class="layout" style="float:left;">
+    			<input type="text" class="textbox" id="teamInfo" readonly="true" value="생산1팀" style="width:100px;">
+    			<input type="text" class="textbox" id="phsicsInfo" readonly="true" value="전력" style="width:50px;margin-left:5px;">
+    			<input type="text" class="textbox" id="frequencyInfo" readonly="true" value="일" style="width:50px;margin-left:5px;">
+    				단위 베이스라인 모델&nbsp;&nbsp;( 적용기간 :
+ 					<input type="text" class="textbox" id="startTimeInfo" readonly="true" value="2016.01.10" style="width:70px;margin-left:5px;">
+					&nbsp;&nbsp;~&nbsp;&nbsp;
+					<input type="text" class="textbox" id="endTimeInfo" readonly="true" value="2016.10.30" style="width:70px;margin-left:5px;">
+					&nbsp;&nbsp;&nbsp;) 		
+					</div>			
+      </div>
+      		<br><br>
+      <div class="layout" style="float:left;">      	
+					<div style='margin:5px;'>베이스라인 모델 :</div>							
+					<div style='margin:5px;'>
+							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R2 : 
+					</div> 
+				</div>
+				<div class="layout"style="float:left;">
+					<div style='margin:5px;'>
+							<input type="text" class="textbox" id="baselineModelInfo" readonly="true" value="y=ax1+bx2+c" style="width:110px;">
+					</div>					
+					<div style='margin:5px;'>
+							<input type="text" class="textbox" id="R2Info" readonly="true" value="0.831" style="width:110px;">
+					</div>
+				</div>
+				<div class="layout" style="float:left;">      	
+					<div style='margin:5px;'>P-Value : </div>
+				</div>
+				<div class="layout" style="float:left;">      	
+					<table td="pvalueGrid" border="1" cellspacing="0">
+						<tr>
+							<td>모델</td>
+							<td>0.005</td>				
+						</tr>						
+						<tr>
+							<td>x1</td>
+							<td>0.000</td>				
+						</tr>
+						<tr>
+							<td>x2</td>
+							<td>0.031</td>				
+						</tr>						
+					</table>
+				</div>
+				<div class="layout" style="float:left;margin-left:30px;">      	
+						<button class="btn" id="modelChooseCancel">확정취소</button>  
+				</div> 
+    </px-card>
+  </template>
+</dom-module>
+<script>
+  Polymer({
+    is: 'my-energy-variable-model-info-card',
+    	properties: {
+    		identifyUri: {
+      	type: String
+    			},
+    		},
+    		
+    init: function() {
+   
+  },
+  
+  ready: function() {	
+				this.getMasterData('/codeinstance');
+	},
+	
+	getMasterData: function(uri){
+					var self = this;
+
+					var value_teamInfo=0;
+					var value_phsicsInfo=0;
+					var value_frequencyInfo=0;
+					var value_startTimeInfo=0;
+					var value_endTimeInfo=0;
+					var value_baselineModelInfo=0;
+					var value_R2Info=0;
+				
+					this.getData('/api/asset' + uri).then(function(data) {
+				
+					for(i=0; i<data.length; i++){
+						if(data[i].classification == "/codeclassification/team"){
+								value_teamInfo.push(data[i].value);
+		   		} else if(data[i].classification == "/codeclassification/physics"){
+		   				value_phsicsInfo.push(data[i].value);
+			   	} else if(data[i].classification == "/codeclassification/frequency"){
+		   				value_frequencyInfo.push(data[i].value);
+			   	} else if(data[i].classification == "/codeclassification/frequency"){
+		   				value_startTimeInfo.push(data[i].value);
+			   	} else if(data[i].classification == "/codeclassification/frequency"){
+		   				value_endTimeInfo.push(data[i].value);
+			   	} else if(data[i].classification == "/codeclassification/frequency"){
+		   				value_baselineModelInfo.push(data[i].value);
+			   	} else if(data[i].classification == "/codeclassification/frequency"){
+		   				value_R2Info.push(data[i].value);
+			   		}
+					}
+			
+		 			var select_site = document.getElementById("energy_efficiency_insert_site");
+		 			var select_unitType = document.getElementById("energy_efficiency_insert_unit_type");
+		 			var select_orderCode = document.getElementById("energy_efficiency_insert_order_code");
+		 			
+		 			var team = document.getElementById("teamInfo");
+		 			var physics = document.getElementById("phsicsInfo");
+		 			var frequency = document.getElementById("frequencyInfo");
+		 			var start_time = document.getElementById("startTimeInfo");
+		 			var end_time = document.getElementById("endTimeInfo");
+		 			var baseline = document.getElementById("baselineModelInfo");
+					var r2 = document.getElementById("R2Info");
+		 			
+		 			team.value = value_teamInfo;
+		 			physics.value = value_phsicsInfo;
+		 			frequency.value = value_frequencyInfo;
+		 			start_time.value = value_startTimeInfo;
+					end_time.value = value_endTimeInfo;
+					baseline.value = value_baselineModelInfo;
+					r2.value = value_R2Info;
+		 			
+		 		});
+			},
+    behaviors: [px.card]
+  });
+</script>

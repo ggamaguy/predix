@@ -1,0 +1,133 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+<link rel="import" href="../px-dropdown/px-dropdown.html"/>
+<link rel="import" href="../px-calendar-picker/px-calendar-picker.html"/>
+<link rel="import" href="../px-datetime-picker/px-datetime-picker.html"/>
+<script src="../moment/min/moment.min.js"></script>
+
+<dom-module id="my-meter-inquiry-card">
+<template>
+<!--<px-card header-text="BASIS INFORMATION">-->
+<px-card header-text={{title}}>
+<div class="card-header-links layout layout--right">
+	<div class="card-header-links layout layout--right">
+		<div class="layout__item u-1/6">
+			<br>
+			<div class=btn-group style="text-align:right; width:100%; padding-bottom:30px">
+				<span>
+				  <button class="btn" id="inquiry" on-click="inquiryButtonClick">조회</button>
+					<button class="btn" id="newSubmit" on-click="new_submitData">추가</button>
+					<button class="btn" id="deleteInform" on-click="deleteData">삭제</button>
+				</span>
+			</div>
+
+	사업장 &nbsp;<select id="site"><option value="">전체</option></select>&nbsp;&nbsp;&nbsp;
+	TAG ID &nbsp;<input type="text" id="tag_id">&nbsp;&nbsp;&nbsp;
+	계측기 명 &nbsp;<select id="meter_name"><option value="default">전체</option></select>&nbsp;&nbsp;&nbsp;
+	물리량 명 &nbsp;<select id="physics"><option value="default">전체</option></select>&nbsp;&nbsp;&nbsp;
+
+
+    </div>
+</div>
+</px-card>
+</template>
+</dom-module>
+
+<script>
+Polymer({
+	is: 'my-meter-inquiry-card',
+	properties: {
+		identifyUri: {
+			type: String
+		},
+		arr_energy: {
+			type: Array,
+			notify: true
+		}
+	},
+
+
+    // initialization
+	ready: function() {
+			//this.hideCard();
+			this.getMasterData('/api/list');
+
+    },
+
+   getMasterData: function(uri){
+		var self = this;
+
+		var site = document.getElementById("site");
+		var meterCode = document.getElementById("meter_code");
+		var meterName = document.getElementById("meter_name");
+		var physics = document.getElementById("physics");
+
+      this.setDataToList(uri+"/code/site",site, null);
+		this.setDataToList(uri+"/meter",meterCode, null);
+		this.setDataToList(uri+"/meter",meterName, null);
+		this.setDataToList(uri+"/physics",physics, null);
+	},
+  new_submitData: function(){
+   	var self = this;
+    	self.updateDeck({'command': 'new'});
+
+  },
+	inquiryButtonClick: function(){
+		var self = this;
+
+      var site = document.getElementById("site");
+      var tag_id = document.getElementById("tag_id");
+		var meter = document.getElementById("meter_name");
+		var physics = document.getElementById("physics");
+
+      
+		var parameters = [];
+		parameters.push(site.value);
+		
+	   
+		parameters.push(meter.value);
+		parameters.push(physics.value);
+		console.log("meter:", meter.value);
+      console.log("physic:", physics.value);
+      
+      if(tag_id.value != null){
+        if(typeof tag_id.value == 'string'){
+         parameters.push(tag_id.value);  
+        
+        }
+        else{
+         alert("please write the tag_id as string type");
+        }
+      }
+      else{
+      alert("please insert the tagID");
+      }
+      
+      
+    var keys = [
+			"site", "tag_id", "name", "physics"
+    ];
+
+    data = this.makeParameter(parameters, keys);
+		var event = new Object();
+		event.gridCommand = "inquiry";
+		event.parameters = data;
+		
+	
+		console.log("data", data[0].key, data[0].value);
+		console.log("event", event);
+
+		self.updateDeck(event);
+		
+ 	},
+	deckStateChanged: function(newState, oldState) {
+		var self = this;
+	   self.showCard();
+	   console.log("identify", self.identifyUri);
+  },
+
+
+
+	behaviors: [px.card]
+});
+</script>

@@ -1,0 +1,63 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+
+<script src="../moment/min/moment.min.js"></script>
+
+<dom-module id="my-energy-efficiency-btn-card">
+<template>
+<px-card header-text={{title}}>
+<div class="card-header-links layout layout--right">
+	<div class="layout__item u-1/6">
+	<br>
+		<div class=btn-group>
+			<span style="float:right;">
+				<button class="btn" id="inquiry" on-click="InquiryData">조회</button>
+				<button class="btn" id="create_new" on-click="new_unitEnergyEfficiency">신규</button>
+				<button class="btn" id="newCode" on-click="add_newData">저장</button>				
+				<button class="btn" id="disable" on-click="deleteData">삭제</button>
+			</span>	
+		</div>
+    </div>
+</div>
+</px-card>
+</template>
+</dom-module>
+
+<script>
+Polymer({
+	is: 'my-energy-efficiency-btn-card',
+	properties: {
+		assetUri: {
+			type: String
+		},
+		identifyUri: {
+			type: String
+		}
+	},
+	
+    // initialization
+	init: function() {	
+			
+    },
+    	InquiryData: function(){
+				//조회 버튼 관련 자바스크립트    	
+    	},
+    
+   new_unitEnergyEfficiency: function(){
+		 //Polymer.dom(document).querySelector("my-energy-consume-team-energy-resource-grid-card").hideCard();
+		 Polymer.dom(document).querySelector("my-energy-efficiency-add-card").showCard();	    		
+   },
+   
+   deleteData: function(){
+   	var self = this;
+		self.updateDeck({'command': 'delete'});
+   
+   },
+   add_newData: function(){
+   	var self = this;
+		self.updateDeck({'command': 'add'});
+   
+   },
+   behaviors: [px.card]
+});
+</script>

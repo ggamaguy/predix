@@ -1,0 +1,52 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+<link rel="import" href="../px-data-table/px-data-table.html"/>
+<link rel="import" href="../px-data-table/px-example-highlight.html"/>
+
+<dom-module id="energy-var-table">
+  <template>
+      <px-card header-text={{title}}>
+        <px-data-table id="varGrid">
+          <px-data-table-column name="사업장명"></px-data-table-column>
+          <px-data-table-column name="부문종류"></px-data-table-column>
+          <px-data-table-column name="부문코드"></px-data-table-column>
+          <px-data-table-column name="부문명"></px-data-table-column>
+          <px-data-table-column name="변수코드"></px-data-table-column>
+          <px-data-table-column name="변수명"></px-data-table-column>
+          <px-data-table-column name="단위"></px-data-table-column>
+
+        </px-data-table>
+      </px-card>
+  </template>
+</dom-module>
+<script>
+Polymer({
+  is:'energy-var-table',
+  properties:{
+    gridData: {
+      type:Array,
+      notify: true
+    }
+  },
+  init: function(){
+    this.getGridData('/');
+  },
+  getGridData: function(uri) {
+		var self = this;
+		this.getData('/api/datagrid' + uri).then(function(data) {
+			self.allData = data.tableData;
+			var uiColumn = data.columns;
+			var uiData = [];
+		  data.tableData.forEach(function(row){
+			    var uiRow = {};
+			    data.columns.forEach(function(col){
+			    uiRow[col.label] = row[col.field]; //key:value
+			});
+			uiData.push(uiRow);
+		  });
+		  self.$.varGrid.tableData = uiData;
+		});
+    },
+  behaviors: [px.card]
+});
+</script>

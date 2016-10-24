@@ -1,0 +1,134 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+<link rel="import" href="../px-data-table/px-data-table.html"/>
+<link rel="import" href="../px-data-table/px-example-highlight.html"/>
+
+<script src="../moment/min/moment.min.js"></script>
+
+<dom-module id="my-facility-add-grid-card">
+<template>
+<px-card header-text={{title}}>
+<div class="card-header-links layout layout--right">
+    <px-data-table id="facilityGrid" striped selectable>
+     <px-data-table-column name="설비 코드" filterable
+							  sortable></px-data-table-column>
+      <px-data-table-column name="설비명" filterable
+							  sortable></px-data-table-column>
+      <px-data-table-column name="조직" filterable
+							  sortable></px-data-table-column>
+      <px-data-table-column name="공정" filterable
+							  sortable></px-data-table-column>
+      <px-data-table-column name="설비그룹" filterable
+							  sortable></px-data-table-column>
+      <px-data-table-column name="날짜" filterable
+							  sortable></px-data-table-column>
+      <px-data-table-column name="가동시간" filterable
+							  sortable></px-data-table-column>
+      <px-data-table-column name="부하율" filterable
+							  sortable></px-data-table-column>
+      <px-data-table-column name="비고" filterable
+							  sortable></px-data-table-column>
+    </px-data-table>
+</px-card>
+</template>
+</dom-module>
+
+<script>
+Polymer({
+	is: 'my-facility-add-grid-card',
+	properties: {
+		gridData: {
+			type: Array,
+			notify: true
+		}
+    },
+    
+	init: function() {
+		var self = this;
+		
+		var today_year = new Date().getFullYear();
+		var today_month = new Date().getMonth()+1;
+		var today_date = new Date().getDate();
+		if(today_date < 10){
+			today_date = '0' + today_date;
+		}
+		if(today_month < 10){
+			today_month = '0' + today_month;
+		}
+		
+		var today = today_year + '-' + today_month + '-' + today_date;
+		
+		console.log('today', today);
+		//this.hideCard();
+		this.$.facilityGrid.addEventListener("px-cell-click", function(e){
+			var clickedRow = e.detail.row,
+				clickedColumn = e.detail.column;
+			console.log("Cell Clicked, Row=", clickedRow);
+		
+		});
+		this.getGridData('/asset-list/production-log/' + today + '/full', "[]");
+	},
+
+    detached: function() {
+    },
+    
+
+	getGridData: function(uri, parameter) {
+	console.log("uri", uri);
+	console.log("param", parameter);
+		var self = this;
+    		px.dealer.httpRequest({
+    			url: '/api/datagrid' + uri,
+    			method: 'POST',
+    			data: parameter
+   		 }).then(function(data){
+        // on fulfillment
+        console.log("Grid data: " , data);
+  				var uitable = data.tableData;
+  				
+  				
+  				var uiColumn = data.columns;
+  				console.log("columnsdata" , uiColumn);
+  				var uiData = [];
+
+  			//console.log("column", data.columns[0].label);
+
+  		  		data.tableData.forEach(function(row){
+  			     var uiRow = {};
+
+  			     data.columns.forEach(function(col){
+  			        uiRow[col.label] = row[col.field]; //key:value
+  			     });
+
+  			     uiData.push(uiRow);
+  			
+        });
+        console.log("uiData", uiData);
+        self.$.facilityGrid.tableData = uiData;
+        
+        
+    	});
+
+    },
+	// context is set for px-dashboard, which updates px-deck, which updates this px-card
+	contextChanged: function(newContext) {
+		// console.log('contextChanged: ' + JSON.stringify(newContext));
+	},
+    
+	deckStateChanged: function(newState, oldState) {
+	console.log("newSt", newState);
+		if(newState.gridCommand != null){
+
+			if(newState.gridCommand == "inquiry"){
+        var parameter = JSON.stringify(newState.parameters);
+        var myDate = newState.mydate;
+        console.log("mydate", myDate);
+        this.getGridData('/asset-list/production-log/' + myDate + '/full', parameter);
+      }
+    }
+		
+    },
+	
+    behaviors: [px.card]
+});
+</script>

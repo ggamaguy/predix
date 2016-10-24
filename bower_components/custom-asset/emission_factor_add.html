@@ -1,0 +1,194 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+
+<script src="../moment/min/moment.min.js"></script>
+
+<dom-module id="my-emission-add-card">
+<template>
+<!--<px-card header-text="BASIS INFORMATION">-->
+<px-card header-text={{title}}>
+<div class="card-header-links layout layout--right">
+	<div class="card-header-links layout layout--right">
+		<div class="layout__item u-1/6">
+			<br>
+			<div class=btn-group style="text-align:right;width:100%; padding-bottom:30px">
+				<span>
+					<button class="btn" id="newSubmit" on-click="new_submitData">추가</button>
+					<button class="btn" id="newCode" on-click="add_newData">저장</button>
+					<button class="btn" id="deleteInform" on-click="deleteData">삭제</button>
+				</span>	
+			</div>
+
+	에너지 &nbsp;<select id="energy-source"></select>&nbsp;&nbsp;&nbsp;
+	배출구분 &nbsp;<select id="emission-type"></select>&nbsp;&nbsp;&nbsp;
+   	적용 년도 &nbsp;<select id="year" name="year"></select>&nbsp;&nbsp;&nbsp;
+   	단위 &nbsp;<select id="unit" name="year"></select>&nbsp;&nbsp;&nbsp;
+	자체에너지 &nbsp;<input type="text" id="self-energy"/>&nbsp;&nbsp;&nbsp;
+	비고  &nbsp; <input type="text" id="description" size="40"/>
+	<br><br>
+      총 발열계수(ML/단위) &nbsp;
+   	<input type="number" id="total-fever" style="width:50px;" maxlength="5" value="{{dynamicCode}}">&nbsp;&nbsp;&nbsp;
+	순 발열계수(ML/단위)  &nbsp;
+		<input type="number" id="pure-fever" style="width:50px;" maxlength="5" value="{{dynamicCode}}">&nbsp;&nbsp;&nbsp;
+	석유 환산 계수(ML/단위)  &nbsp;
+		<input type="number" id="oil-EXF" style="width:50px;" maxlength="5" value="{{dynamicCode}}">&nbsp;&nbsp;&nbsp;
+	배출 계수(CO2)  &nbsp;
+		<input type="number" id="ef-CO2" style="width:50px;" maxlength="5" value="{{dynamicCode}}">&nbsp;&nbsp;&nbsp;
+	배출 계수(CH4)  &nbsp;
+		<input type="number" id="ef-CH4" style="width:50px;" maxlength="5" value="{{dynamicCode}}">&nbsp;&nbsp;&nbsp;
+	배출 계수(N2O)  &nbsp;
+		<input type="number" id="ef-N20" style="width:50px;" maxlength="5" value="{{dynamicCode}}">&nbsp;&nbsp;&nbsp;	
+    </div>
+</div>
+</px-card>
+</template>
+</dom-module>
+
+<script>
+Polymer({
+	is: 'my-emission-add-card',
+	properties: {
+		identifyUri: {
+			type: String
+		},
+		emissionUri: {
+			type: String,
+			value: "/emission-factor",
+			notify: true
+		}
+	},
+	
+    // initialization
+	ready: function() {	
+			//this.hideCard();
+			this.getYearData();
+			this.getMasterData('/api/list/code');
+		
+    },
+
+   getYearData : function(){
+   			var self = this;
+   			var strYear= [];
+				var sYear=1900;
+			
+				var currentYear = new Date().getFullYear();
+				
+				for(var i=currentYear; i>=sYear; i--){
+				  strYear +="<option value="+i+">"+i+"</option>";
+			}
+				document.getElementById("year").innerHTML = strYear; //strYear is setted by using innerHTML
+				
+	},	
+	getMasterData: function(uri){
+				var self = this;
+				
+				var select_site = document.getElementById("energy-source");
+				var select_emission_type = document.getElementById("emission-type");
+				
+				this.setDataToList(uri+"/energy-source",select_site, null);
+				this.setDataToList(uri+"/emission-type",select_emission_type, null);
+	},
+
+   new_submitData: function(){
+		var self = this;
+		
+		
+		px.dealer.httpRequest({
+			url: '/api/asset/' + self.emissionUri,
+			method: 'POST',
+			data: this.buildQuery(),
+		}).then(function(data){
+			console.log("post?", data);
+			alert("정상적으로 등록되었습니다.");
+			window.location.reload();
+		});
+	 },
+		
+		buildQuery: function(){ 
+		var self = this;
+		
+		var input_energy = document.getElementById("energy");
+		var option_energy_value = input_energy.options[input_energy.selectedIndex].text;
+		var arr_slice_energy = option_energy_value.split("-");
+		var energy_sliceCode = arr_slice_energy[0];
+		
+		var input_emission_type = document.getElementById("emission-type");
+		var option_emission_value = input_emission_type.options[input_emission_type.selectedIndex].text;
+		var arr_slice_emission = option_emission_value.split("-");
+		var emission_sliceCode = arr_slice_emission[0];
+		
+		var input_year = document.getElementById("year").value;
+		var input_self_energy = document.getElementById("self-energy").value;
+		var input_unit_type = document.getElementById("unit").value;
+		var option_unit_type_value = input_unit_type.options[input_unit_type.selectedIndex].text;
+		var arr_slice_unit = option_unit_type_value.split("-");
+		var unit_sliceCode = arr_slice_unit[0];
+		var input_description = document.getElementById("description").value;
+		var input_total_fever = Number(document.getElementById("total-fever").value);
+		var input_pure_fever = Number(document.getElementById("pure-fever").value);
+		var input_oil_exf = Number(document.getElementById("oil-EXF").value);
+		var input_ef_co2 = Number(document.getElementById("ef-CO2").value);
+		var input_ef_ch4 = Number(document.getElementById("ef-CH4").value);
+		var input_ef_n2o = Number(document.getElementById("ef-N20").value);
+		
+   	var query = [{
+   	"uri" : self.emissionUri + "/" + energy_sliceCode + emission_sliceCode + "-" + input_year,
+  	 	"energyType" : "/codeinstance/" + energy_sliceCode,
+    	"emissionType": "/codeinstance/" + emission_sliceCode,
+    	"year": input_year,
+   	"energy_own": input_self_energy,
+    	"unit": "/codeinstance/" + unit_sliceCode,
+   	"factors": {
+      	"total_fever": {
+        		"label": "총발열계수",
+        		"value": input_total_fever,
+        		"uom": "mJ"
+      	},
+      	"pure_fever": {
+        		"label": "순발열계수",
+        		"value": input_pure_fever,
+        		"uom": "mJ"
+      	},
+      	"oil_exf": {
+        		"label": "석유환산계수",
+        		"value": input_oil_exf,
+        		"uom": "mJ"
+      	},
+      	"ef_CO2": {
+        		"label": "배출계수(CO2)",
+        		"value": input_ef_co2,
+        		"uom": "mJ"
+      	},
+      	"ef_CH4": {
+        		"label": "배출계수(CH4)",
+        		"value": input_ef_ch4,
+        		"uom": "mJ"
+      	},
+      	"ef_N2O": {
+        		"label": "배출계수(N2O)",
+        		"value": input_ef_n2o,
+        		"uom": "mJ"
+      	}
+    	},
+    "note": input_description
+  }
+]
+   		console.log('query', query);
+  			return query;
+  
+	},
+ 
+	deckStateChanged: function(newState, oldState) {
+		var self = this;
+	   self.showCard();
+	   	if(newState.command == 'new'){
+				console.log("new?", 'new');
+				this.new_submitData();
+		}
+	   
+    },
+	
+  
+	behaviors: [px.card]
+});
+</script>

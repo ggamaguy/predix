@@ -1,0 +1,95 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+<link rel="import" href="../px-data-table/px-data-table.html"/>
+<link rel="import" href="../px-data-table/px-example-highlight.html"/>
+
+<script src="../moment/min/moment.min.js"></script>
+
+<dom-module id="my-master-grid-card">
+<template>
+<px-card header-text={{title}}>
+<div class="card-header-links layout layout--right">
+    <px-data-table id="masterGrid" striped selectable>
+
+    </px-data-table>
+</px-card>
+</template>
+</dom-module>
+
+<script>
+Polymer({
+	is: 'my-master-grid-card',
+	properties: {
+		gridData: {
+			type: Array,
+			notify: true
+		}
+    },
+
+	ready: function() {
+		var self = this;
+		//this.hideCard();
+		this.$.masterGrid.addEventListener("px-cell-click", function(e){
+			var clickedRow = e.detail.row,
+				clickedColumn = e.detail.column;
+			console.log("Cell Clicked, Row=", clickedRow);
+
+		});
+		this.getGridData('/asset-list/facility-master/full', "[]");
+	},
+
+    detached: function() {
+    },
+
+
+	getGridData: function(uri, parameter) {
+		var self = this;
+    px.dealer.httpRequest({
+    url: '/api/datagrid' + uri,
+    method: 'POST',
+    data:parameter
+    }).then(function(data){
+        // on fulfillment
+        //console.log("Grid data: " , data);
+  			self.allData = data.tableData;
+  			var uiColumn = data.columns;
+  			var uiData = [];
+
+  			//console.log("column", data.columns[0].label);
+
+  		  data.tableData.forEach(function(row){
+  			     var uiRow = {};
+
+  			     data.columns.forEach(function(col){
+  			        uiRow[col.label] = row[col.field]; //key:value
+  			     });
+
+  			     uiData.push(uiRow);
+        });
+        
+        self.$.masterGrid.tableData = uiData;
+    });
+
+    },
+
+	// context is set for px-dashboard, which updates px-deck, which updates this px-card
+	contextChanged: function(newContext) {
+		// console.log('contextChanged: ' + JSON.stringify(newContext));
+	},
+
+  deckStateChanged: function(newState, oldState) {
+    var self = this;
+    console.log("dea heat"+JSON.stringify(newState));
+
+    if(newState.gridCommand != null){
+
+			if(newState.gridCommand == "inquiry"){
+        var parameter = JSON.stringify(newState.parameters);
+        this.getGridData('/asset-list/facility-master/full', parameter);
+      }
+    }
+  },
+
+    behaviors: [px.card]
+});
+</script>

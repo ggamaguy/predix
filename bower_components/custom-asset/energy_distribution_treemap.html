@@ -1,0 +1,162 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+<link rel="import" href="../px-data-table/px-data-table.html"/>
+<link rel="import" href="../file-tree-master/file-tree.html"/>
+
+<script src="../webcomponentsjs/webcomponents.js"></script>
+
+<dom-module id="my-tree-card">
+
+	<template>
+		<px-card style="min-width:500px;"header-text="SITE INFORMATION">
+			<div class="card-header-links layout layout--right">
+				<div style="width:100%;">
+
+					<table style="width:500px;">
+						<thead>
+							<th style="width:200px;">계측 Tree</th>
+							<th style="width:100px;">가상 여부</th>
+							<th style="width:100px;">부하 구분</th>
+						</thead>
+						<tbody>
+							<tr><td colspan="3" style="text-align:left;">
+							<file-tree></file-tree>
+						</td></tr>
+						</tbody>
+				</table>
+				</div>
+     	</div>
+    </px-card>
+	</template>
+	<script>
+	  Polymer({
+	    is: 'my-tree-card',
+	    properties: {
+	      data: {},
+
+
+	    },
+			addNode:function(event){
+			
+			//	$(Polymer.dom(this.$$('#tree'))).jstree();
+				this.updateDeck({
+					id:event.target.id,
+					data: ''
+				});
+			},
+			deckStateChanged: function(newDeckState, oldDeckState){
+				var tree;
+				/*
+				if(newDeckState.id == 'select_quiry_condition'){
+					if(oldDeckState != null && oldDeckState.data != newDeckState.data){
+						tree = newDeckState.data;
+					}
+				}*/
+
+				if(newDeckState.gridCommand == "inquiry"){
+		      var parameter = newDeckState.parameters;
+
+					console.log("[MinjuneL] sirosiro "+JSON.stringify(parameter));
+		      this.getGridData('/api/tree/energy-distribution', parameter);
+		    }
+			},
+			nodeTab: function(event){
+				var low_classification;
+				this.updateDeck({
+					id: 'tree',
+					data: low_classification
+					});
+			},
+			init: function(){
+			},
+			getGridData: function(uri, parameter) {
+				var self = this;
+				console.log("[MinjuneL] adderess = "+uri+"/"+parameter.site+"/"+parameter.code);
+		    px.dealer.httpRequest({
+		    url: uri+"/"+parameter.site+"/"+parameter.code,
+		    method: 'GET'
+		    }).then(function(data){
+						var dataString = JSON.stringify(data[0]);
+						dataString = dataString.replace(/childs/gi, "children");
+						data = JSON.parse(dataString);
+						console.log("Grid data: " , JSON.stringify( data ));
+
+
+						document.querySelector("file-tree").data = self.setDataToTree(data);
+						//self.$.file-tree.addEventListener("px-cell-click", function(e){
+						document.querySelector("file-tree").addEventListener("folderSelected", function(e){
+				      var clicked = e.detail.data.description;
+				      console.log("jaok", clicked);
+							self.nodeSelected(clicked);
+				    });
+		    });
+		  },
+			nodeSelected: function(data){
+				var self = this;
+				console.log("tree", JSON.stringify(data));
+				var parameter = new Object();
+				parameter.id="tree";
+				if(data.type == "NODE")
+				   parameter.data = "node";
+				else if(data.type == "FACILITY-MASTER")
+					parameter.data = "facility";
+				else if(data.type == "SUB-TEAM")
+					parameter.data = "sub_team";
+				else if(data.type == "ENERGY-USAGE")
+					parameter.data = "energy_usage";
+				else if(data.type == "FUNCTIONAL-LOCATION")
+					parameter.data = "flocation";
+
+				parameter.detail = data;
+			
+				self.updateDeck(parameter);
+	console.log("treemap-paramenter", parameter);
+			},
+			ready: function() {
+
+			},
+			setDataToTree : function( data ){
+				var self = this;
+				var object = data;
+				var temp = new Object();
+				temp.name = data.meter_name;
+				temp.shared = false;
+				temp.open = true;
+				temp.virtual_check = data.virtual;
+				if(temp.virtual_check == false)
+					temp.virtual_check = "";
+
+				temp.low_classification = data.type;
+				switch(temp.low_classification){
+					case "FACILITY-MASTER" :
+					temp.low_classification = "설비"
+					break;
+					case "FUNCTIONAL-LOCATION" :
+					temp.low_classification = "기능위치";
+					break;
+					case "SUB-TEAM" :
+					temp.low_classification = "조직";
+					break;
+					case "ENERGY-USAGE" :
+					temp.low_classification = "에너지이용";
+					break;
+					default:
+					temp.low_classification = "";
+				}
+
+				temp.children = new Array();
+
+				var children = data.children;
+				for (var child in children){
+					temp.children.push(self.setDataToTree(children[child]));
+				}
+				delete object["children"];
+				temp.description = object;
+
+				return temp;
+			},
+	    behaviors: [px.card]
+	  });
+
+	</script>
+</dom-module>

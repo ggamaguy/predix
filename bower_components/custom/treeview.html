@@ -1,0 +1,132 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+<link rel="import" href="../px-data-table/px-data-table.html"/>
+<link rel="import" href="../file-tree-master/file-tree.html"/>
+
+<script src="../webcomponentsjs/webcomponents.js"></script>
+
+<dom-module id="my-tree-card">
+
+	<template>
+		<px-card style="min-width:500px;"header-text="SITE INFORMATION">
+			<div class="card-header-links layout layout--right">
+				<div style="width:100%;">
+					<button style=margin-right:10px; on-click="addNode" id="insertNode">추가</button>
+					<table style="width:500px;">
+						<thead>
+							<th style="width:200px;">계측 Tree</th>
+							<th style="width:100px;">가상 여부</th>
+							<th style="width:100px;">부하 구분</th>
+						</thead>
+						<tbody>
+							<tr><td colspan="3" style="text-align:left;">
+							<file-tree></file-tree>
+						</td></tr>
+						</tbody>
+				</table>
+				</div>
+     	</div>
+    </px-card>
+	</template>
+	<script>
+	  Polymer({
+	    is: 'my-tree-card',
+	    properties: {
+	      data: {},
+
+	    },
+			addNode:function(event){
+			//	$(Polymer.dom(this.$$('#tree'))).jstree();
+				this.updateDeck({
+					id:event.target.id,
+					data: ''
+				});
+			},
+			deckStateChanged: function(newDeckState, oldDeckState){
+				var tree;
+				if(newDeckState.id == 'select_quiry_condition'){
+					if(oldDeckState != null && oldDeckState.data != newDeckState.data){
+						tree = newDeckState.data;
+					}
+				}
+			},
+			nodeTab: function(event){
+				var low_classification;
+				this.updateDeck({
+					id: 'tree',
+					data: low_classification
+					});
+			},
+			init: function(){
+				document.querySelector("file-tree").data = {
+			        "name": "Tree B",
+			        "open": true,
+			        "shared": false,
+							"virtual_check" : true,
+							"low_classification" : "설비1",
+			        "children": [
+			          {
+			            "name": "Child A",
+			            "open": false,
+			            "shared": false,
+									"virtual_check" : true,
+									"low_classification" : "설비2",
+			            "children": [{
+			              "name": "Grandchild A",
+										"virtual_check" : true,
+										"low_classification" : "설비3"
+			            }]
+			          },
+			          {
+			            "name": "Child B",
+			            "shared": false,
+			            "open": false,
+									"virtual_check" : true,
+									"low_classification" : "설비4",
+			            "children": [{
+			              "name": "Grandchild B",
+			              "open": false,
+										"virtual_check" : true,
+										"low_classification" : "설비5",
+			              "children": [{
+			                "name": "Great Grandchild B",
+											"virtual_check" : true,
+											"low_classification" : "설비6"
+			              }]
+			            }]
+			          },
+			          {
+			            "name": "Child C",
+			            "shared": false,
+			            "open": false,
+									"virtual_check" : true,
+									"low_classification" : "설비7",
+			            "children": [{
+			              "name": "Grandchild C",
+										"virtual_check" : true,
+										"low_classification" : "설비8"
+			            }]
+			          },
+			          {
+			            "name": "Child D",
+			            "shared": false,
+			            "open": false,
+									"virtual_check" : true,
+									"low_classification" : "설비9",
+			            "children": [{
+			              "name": "Grandchild D",
+										"virtual_check" : true,
+										"low_classification" : "설비10"
+			            }]
+			          }
+			        ]
+			      };
+			},
+			ready: function() {
+
+			},
+	    behaviors: [px.card]
+	  });
+
+	</script>
+</dom-module>

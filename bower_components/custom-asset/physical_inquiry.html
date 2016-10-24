@@ -1,0 +1,114 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+<link rel="import" href="../px-modal/px-modal.html"/>
+<link rel="import" href="../px-theme/px-theme.html"/>
+
+<script src="../moment/min/moment.min.js"></script>
+
+<dom-module id="my-physical-inquiry-card">
+  <template>
+    <px-card header-text={{title}}>
+      <div class="card-header-link layout layout--right">
+        <div class="layout__item u-1/6">
+          <div class="btn-group" style="width:100%; text-align:right">
+            <span>
+              <button class="btn" id="inquiry" on-click="inquiryData">조회</button>&nbsp; &nbsp;
+              <button class="btn" id="new" on-click="newData">신규</button>&nbsp; &nbsp;
+              <button class="btn" id="delete" on-click="deleteData">삭제</button>&nbsp; &nbsp;
+            </span>
+          </div>
+
+          사업장 &nbsp;<select id="site"><option value="">전체</option></select>&nbsp; &nbsp;
+          필수 입력 여부 &nbsp;<input type="checkbox" id="essential_check" on-click="essentialCheck" checked/>
+        </div>
+      </div>
+    </px-card>
+  </template>
+</dom-module>
+
+<script>
+Polymer({
+  is: 'my-physical-inquiry-card',
+  properties: {
+    identifyUri: {
+      type: String
+    }
+  },
+  init: function() {
+
+  },
+  ready: function() {
+    var self = this;
+    self.getPhysicalData('/api/list/code');
+  },
+  getPhysicalData: function(uri) {
+    var self = this;
+
+    var select_site = document.getElementById("site");
+
+    this.setDataToList(uri+"/site",select_site, null);
+  },
+  inquiryData: function() {
+    var self = this;
+
+    var site = document.getElementById("site");
+    var required = document.getElementById("essential_check");
+    
+    
+    console.log("required", required.value);
+    
+		var parameters = [];
+		parameters.push(site.value);
+		if(required.value == "on"){
+			parameters.push("true")
+		}else{
+	   	parameters.push(required.value);
+	   }
+    	
+    		
+    var keys = [
+			"site",
+         "required"
+    ];
+
+    data = this.makeParameter(parameters, keys);
+		var event = new Object();
+		event.gridCommand = "inquiry";
+		event.parameters = data;
+		
+    
+    console.log("parameters", parameters);
+
+		self.updateDeck(event);
+  },
+  newData: function() {
+    var self = this;
+    self.updateDeck({'command': 'new'});
+  },
+
+  deleteData: function() {
+    var self = this;
+    self.updateDeck({'command': 'delete'});
+  },
+  
+  essentialCheck: function() {
+ 
+  	 var y = document.getElementById("essential_check");
+		
+				if(y.checked == true){
+					var a = document.getElementById("essential_check").value = "true";
+					console.log("a", a);
+				}else{
+				   y.checked == false
+				   console.log("bom", false);
+				   document.getElementById("essential_check").value = "false";
+				}
+	},
+   
+   
+  deckStateChanged: function(newState, oldState) {
+
+  },
+  behaviors: [px.card]
+});
+</script>

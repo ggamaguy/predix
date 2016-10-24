@@ -1,0 +1,151 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+<link rel="import" href="../px-modal/px-modal.html"/>
+<link rel="import" href="../px-theme/px-theme.html"/>
+
+<script src="../moment/min/moment.min.js"></script>
+
+<dom-module id="my-detail-energy-efficiency-inquiry-card">
+  <template>
+    <px-card header-text={{title}}>
+      <div class="card-header-link layout layout--right">
+        <div class="layout__item u-1/6">
+          사업장 &nbsp;<select id="site"></select>&nbsp; &nbsp;
+          하위조직 &nbsp;<select id="sub_team"></select>&nbsp; &nbsp;
+          *설비 UNIT TYPE &nbsp;<select id="facility_unit_type_info"></select>&nbsp; &nbsp;
+          주기 &nbsp;<select id="cycle"></select>&nbsp; &nbsp;
+          <br></br>
+          설비코드 &nbsp;<input type="text" id="facility_code" />
+          <px-modal modal-heading="설비 마스터" id="modal-facility-master">
+            <button class="btn btn--primary btn--icon modal-trigger" on-click="searchFacility">
+              <i class="fa fa-search"></i>
+            </button>
+            <button class="btn btn--primary" on-click="modalSearch">조회</button>
+            <button class="btn btn--primary" on-click="modalClose">닫기</button>
+            <br></br>
+            설비코드 &nbsp;<input type="text" id="modal_facility_code" />
+            설비명 &nbsp;<input type="text" id="modal_facility_name" />
+            <br></br>
+            하위설비그룹 &nbsp;<select id="modal_facility_sub_group"></select>&nbsp; &nbsp;
+            하위조직 &nbsp;<select id="modal_sub_team"></select>&nbsp; &nbsp;
+            공정 &nbsp;<select id="modal_sub_process"></select>
+            <br></br>
+            <px-data-table id="modalDetailEnergyEfficiencyGrid" striped table-rows></px-data-table>
+          </px-modal>
+          설비명 &nbsp;<input type="text" id="facility_name" />&nbsp; &nbsp;
+          조회기간 &nbsp;<px-datetime-picker id="check_start_time" date-format="YYYY.MM" time-format="hh:mmA" hide-time="true" show-time-zone="none" time-zone="Asia/Seoul"></px-datetime-picker>
+             &nbsp; - &nbsp;
+             <px-datetime-picker id="check_end_time" date-format="YYYY.MM" time-format="hh:mmA" hide-time="true" show-time-zone="none" time-zone="Asia/Seoul"></px-datetime-picker>
+          &nbsp; &nbsp; &nbsp; &nbsp;
+        </div>
+      </div>
+    </px-card>
+  </template>
+</dom-module>
+
+<script>
+Polymer({
+  is: 'my-detail-energy-efficiency-inquiry-card',
+  properties: {
+    identifyUri: {
+      type: String
+    },
+    arr_sub_team: {
+      type: Array,
+      notify: true
+    }
+  },
+  init: function() {
+
+  },
+  ready: function() {
+    var self = this;
+    self.getDetailEnergyEfficiencyData('/codeinstance');
+  },
+  getDetailEnergyEfficiencyData: function(uri) {
+    var self = this;
+    var arr_site = [];
+    self.arr_sub_team = [];
+    var arr_facility_unit_type_info = [];
+    var arr_cycle = [];
+
+    self.getData('/api/asset' + uri).then(function(data) {
+      for(i=0; i<data.length; i++) {
+        if(data[i].classification == "/codeclassification/site") {
+          arr_site.push(data[i].value);
+        } else if(data[i].classification == "/codeclassification/subteam") {
+          self.arr_sub_team.push(data[i].value);
+        } else if(data[i].classification == "/codeclassification/facilityunittypeinfo") {
+          arr_facility_unit_type_info.push(data[i].value);
+        } else if(data[i].classification == "/codeclassification/cycle") {
+          arr_cycle.push(data[i].value);
+        } else {
+        }
+      }
+
+      var select_site = document.getElementById("site");
+      var select_sub_team = document.getElementById("sub_team");
+      var select_facility_unit_type_info = document.getElementById("facility_unit_type_info");
+      var select_cycle = document.getElementById("cycle");
+
+      for(index in arr_site) {
+        select_site.options[select_site.options.length] = new Option(arr_site[index], index);
+      }
+      for(index in self.arr_sub_team) {
+        select_sub_team.options[select_sub_team.options.length] = new Option(self.arr_sub_team[index], index);
+      }
+      for(index in self.arr_facility_group) {
+        select_facility_unit_type_info.options[select_facility_unit_type_info.options.length] = new Option(arr_facility_unit_type_info[index], index);
+      }
+      for(index in arr_cycle) {
+        select_cycle.options[select_cycle.options.length] = new Option(arr_cycle[index], index);
+      }
+    });
+  },
+  initModal: function() {
+    var self = this;
+    var select_sub_team = document.getElementById("modal_sub_team");
+    var select_facility_sub_group = document.getElementById("modal_facility_sub_group");
+    var select_sub_process = document.getElementById("modal_sub_process");
+
+    for(index in self.arr_sub_team) {
+      select_sub_team.options[select_sub_team.options.length] = new Option(self.arr_sub_team[index], index);
+    }
+    for(index in self.arr_facility_sub_group) {
+      select_facility_sub_group.options[select_facility_sub_group.options.length] = new Option(self.arr_facility_sub_group[index], index);
+    }
+    for(index in self.arr_sub_process) {
+      select_sub_process.options[select_sub_process.options.length] = new Option(self.arr_sub_process[index], index);
+    }
+    this.getModalDetailEnergyEfficiencyGrid('/modal-detail-energy-efficiency');
+  },
+  getModalDetailEnergyEfficiencyGrid: function(uri) {
+    var self = this;
+    self.getData('/api/datagrid' + uri).then(function(data) {
+      self.allData = data.tableData;
+      var uiColumn = data.columns;
+      var uiData = [];
+
+      data.tableData.forEach(function(row) {
+        data.columns.forEach(function(col) {
+          uiRow[col.label] = row[col.field];
+        });
+        uiData.push(uiRow);
+      });
+      self.$.modalDetailEnergyEfficiencyGrid.tableData = uiData;
+    });
+  },
+  searchFacility: function() {
+    var self = this;
+    self.initModal();
+  },
+  modalClose: function() {
+    var modal = document.getElementById("modal-facility-master");
+    modal.modalButtonClicked();
+  },
+  deckStateChanged: function(newState, oldState) {
+
+  },
+  behaviors: [px.card]
+});
+</script>

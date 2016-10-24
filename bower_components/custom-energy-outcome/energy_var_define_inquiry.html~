@@ -1,0 +1,123 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+
+<dom-module id="energy-var-quiry-card">
+	<template>
+		<px-card header-text={{title}}>
+			<div style="padding-top:30px;"class="card-header-links layout layout--right">
+
+				<div style="width:100%; text-align:right; padding-bottom:30px;">
+					<button class="btn" id="newSubmit" on-click="new_submitData">추가</button>
+					<button class="btn" id="newCode" on-click="add_newData">저장</button>
+					<button class="btn" id="deleteInform" on-click="deleteData">삭제</button>
+				</div>
+				<div style="float:left;">
+					<p class="labelText">사업장</p>
+				</div>
+				<div style="float:left;">
+					<select class="inputBox selectInputBox" id="site"></select>
+				</div>
+				<div style="float:left;">
+					<p class="labelText">부문선택</p>
+					</div>
+				<div style="float:left;">
+					<select class="inputBox selectInputBox" id="team" on-change="findSubTeam">
+						<option value="">선택</option>
+						<option value="SUB-TEAM">조직</option>
+						<option value="FACILITY-MASTER">설비</option>
+						<option value="ENERGY-USAGE">에너지이용</option>
+						<option value="FUNCTIONAL-LOCATION">기능위치</option>
+					</select>
+				</div>
+				<div style="float:left;">
+					<p class="labelText">부문이름<p>
+				</div>
+				<div style="float:left;">
+					<select class="inputBox selectInputBox" id="sub_team"><option value="">선택</option></select>
+				</div>
+				<div style="clear:both;margin-top:30px;" class="layout__item u-1/6">
+					<div style="float:left;">
+						<p class="labelText">변수코드</p>
+					</div>
+					<div style="float:left;">
+						<input class="inputBox" id="variable_code" type="text" readonly="true">
+					</div>
+					<div style="float:left;">
+						<p class="labelText">변수이름</p>
+					</div>
+					<div style="float:left;">
+						<input class="inputBox" id="variable_name" type="text">
+					</div>
+					<div style="float:left;">
+						<p class="labelText">단위</p>
+					</div>
+					<div style="float:left;">
+						<select class="inputBox selectInputBox" id="unit"></select>
+					</div>
+				</div>
+				<div class="layout__item u-1/6">
+				</div>
+			</div>
+		</px-card>
+	</template>
+</dom-module>
+<script>
+  Polymer({
+    is: 'energy-var-quiry-card',
+		ready : function(){
+			var self = this;
+			self.setOptionToSelectTag('/api/list');
+		},
+		setOptionToSelectTag: function(uri){
+			var self = this;
+
+			var site = document.getElementById("site");
+			var unit = document.getElementById("unit");
+
+
+
+			this.setDataToList(uri+"/code/site", site, null);
+			this.setDataToList(uri+"/physics", unit, null);
+
+		},
+		findSubTeam: function(list){
+			var uri = "/api/list";
+
+			console.log("listtargetvalue", list.target.value);
+			var subTeam = document.getElementById("sub_team");
+			subTeam.options.length=0;
+			this.setDataToList(uri+"/terminal/"+list.target.value , subTeam, null);
+		},
+		new_submitData: function(){
+    	var self = this;
+			console.log("dea heat");
+     	self.updateDeck({'command': 'new'});
+
+    },
+    add_newData: function(){
+    	var self = this;
+ 			self.updateDeck({'command': 'add'});
+
+    },
+    deleteData: function(){
+    	var self = this;
+ 			self.updateDeck({'command': 'delete'});
+    },
+    behaviors: [px.card]
+  });
+</script>
+<style>
+.inputBox{
+	text-align:center;
+	width:121px;
+	margin:auto;
+}
+.selectInputBox{
+	width:125px;
+}
+.labelText{
+	text-align:center;
+	width:100px;
+	margin:auto;
+}
+</style>

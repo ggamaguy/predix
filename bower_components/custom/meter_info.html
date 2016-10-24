@@ -1,0 +1,99 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+<link rel="import" href="../px-dropdown/px-dropdown.html"/>
+<link rel="import" href="../px-calendar-picker/px-calendar-picker.html"/>
+<link rel="import" href="../px-datetime-picker/px-datetime-picker.html"/>
+<script src="../moment/min/moment.min.js"></script>
+
+<dom-module id="my-meter-info-card">
+<template>
+<!--<px-card header-text="BASIS INFORMATION">-->
+<px-card header-text={{title}}>
+<div class="card-header-links layout layout--right">
+	<div class="layout__item u-1/6">
+
+	사업장 &nbsp;<select id="site"></select>&nbsp;&nbsp;&nbsp;
+	TAG ID &nbsp;<input type="text" id="tag_id">&nbsp;&nbsp;&nbsp;
+	계측기 코드 &nbsp;<input type="text" id="meter_code">&nbsp;&nbsp;&nbsp;
+	계측기 명 &nbsp;<input type="text" id="meter_name">&nbsp;&nbsp;&nbsp;
+	물리량 명 &nbsp;<input type="text" id="physics">&nbsp;&nbsp;&nbsp;
+	
+
+
+
+    </div>
+</div>
+</px-card>
+</template>
+</dom-module>
+
+<script>
+Polymer({
+	is: 'my-meter-info-card',
+	properties: {
+		identifyUri: {
+			type: String
+		},
+		arr_energy: {
+			type: Array,
+			notify: true
+		}
+	},
+	
+	
+    // initialization
+	ready: function() {	
+			//this.hideCard();
+			this.getMasterData('/codeinstance');
+		
+    },
+
+   getMasterData: function(uri){
+				var self = this;
+				var arr_site = [];
+				var arr_organize = [];
+				var arr_team = [];
+				self.arr_energy = [];
+	
+					this.getData('/api/asset' + uri).then(function(data) {
+				//	console.log("Grid data: " + JSON.stringify(data));
+					for(i=0; i<data.length; i++){
+			
+						if(data[i].classification == "/codeclassification/site"){
+				
+							arr_site.push(data[i].value);
+							
+						}else if(data[i].classification == "/codeclassification/physics"){
+							arr_organize.push(data[i].value);
+						}else{}
+					}
+			//console.log("realArr", self.opNewarr);
+		
+		 	var select_site = document.getElementById("site");
+		 	var select_organize = document.getElementById("organization");
+		 
+		 	for(index in arr_site){
+		 		select_site.options[select_site.options.length] = new Option(arr_site[index], index);
+		 	}
+		 	for(index in arr_organize){
+		 		select_organize.options[select_organize.options.length] = new Option(arr_organize[index], index);
+		 	}
+		});
+	},
+
+   new_submitData: function(){
+   	var self = this;
+    	self.updateDeck({'command': 'new' + self.identifyUri});
+		
+   },
+ 
+	deckStateChanged: function(newState, oldState) {
+		var self = this;
+	   self.showCard();
+	   console.log("identify", self.identifyUri);
+    },
+	
+  
+	behaviors: [px.card]
+});
+</script>

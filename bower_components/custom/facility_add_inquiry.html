@@ -1,0 +1,216 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+<link rel="import" href="../px-dropdown/px-dropdown.html"/>
+<link rel="import" href="../px-calendar-picker/px-calendar-picker.html"/>
+<link rel="import" href="../px-datetime-picker/px-datetime-picker.html"/>
+<link rel="import" href="../px-modal/px-modal.html"/>
+<link rel="import" href="../px-rangepicker/px-rangepicker.html"/>
+<script src="../moment/min/moment.min.js"></script>
+
+<dom-module id="my-facility-add-inquiry-card">
+<template>
+<!--<px-card header-text="BASIS INFORMATION">-->
+<px-card header-text={{title}}>
+<div class="card-header-links layout layout--right">
+	<div class="layout__item u-1/6">
+	<br>
+		<div class=btn-group style="text-align:right;width:100%; padding-bottom:30px">
+			<span>
+				<button class="btn" id="inquiry" on-click="InquiryData">조회</button>
+				<button class="btn" id="newCode" on-click="add_newData">저장</button>
+				 
+				<px-modal style="text-align:left;" modal-heading="기간 선택" id="modal-period-choose">
+            <button class="btn btn--primary btn--icon modal-trigger" on-click="periodChoose">
+              <i class="fa fa-search"></i>일괄생성
+            </button>
+     			         <px-datetime-picker style="margin:auto;" date-time="2016-09-02T00:00:00.000Z" date-format="YYYY/MM/DD" time-format="hh:mmA" hide-time="true" show-time-zone="none" time-zone="Asia/Seoul"></px-datetime-picker>
+        <p style="display:inline-block;"> ~ </p>
+        <px-datetime-picker date-time="2016-09-02T00:00:00.000Z" date-format="YYYY/MM/DD" time-format="hh:mmA" hide-time="true" show-time-zone="none" time-zone="Asia/Seoul"></px-datetime-picker>
+
+            <button class="btn btn--primary" on-click="datemodalClose">적용</button>
+            <br></br>
+      
+          </px-modal>&nbsp; &nbsp;
+			</span>	
+		</div>
+
+	적용 일자 <px-datetime-picker date-time="2016-09-02T00:00:00.000Z" date-format="YYYY/MM/DD" time-format="hh:mmA" hide-time="true" show-time-zone="none" time-zone="Asia/Seoul"></px-datetime-picker>
+	조직 &nbsp;<select id="team" ></select>&nbsp;&nbsp;&nbsp;
+	공정 &nbsp;<select id="sub_process" ></select>&nbsp;&nbsp;&nbsp;
+	설비 그룹 &nbsp;<select id="sub_facility_group"></select>&nbsp;&nbsp;&nbsp;
+	설비 코드 &nbsp;<input type="text" id="asset-code">&nbsp;&nbsp;&nbsp;
+	 <px-modal modal-heading="설비 마스터" id="modal-facility-master">
+            <button class="btn btn--primary btn--icon modal-trigger" on-click="searchFacility">
+              <i class="fa fa-search"></i>검색
+            </button>
+            <button class="btn btn--primary" on-click="modalSearch">조회</button>
+            <button class="btn btn--primary" on-click="modalClose">닫기</button>
+            <br></br>
+            설비코드 &nbsp;<input type="text" id="modal_facility_code" />
+            설비명 &nbsp;<input type="text" id="modal_facility_name" />
+            <br></br>
+            하위설비그룹 &nbsp;<select id="modal_facility_sub_group"></select>&nbsp; &nbsp;
+            하위조직 &nbsp;<select id="modal_sub_team"></select>&nbsp; &nbsp;
+            공정 &nbsp;<select id="modal_sub_process"></select>
+            <br></br>
+            <px-data-table id="modalDetailEnergyEfficiencyGrid" striped table-rows></px-data-table>
+          </px-modal>&nbsp; &nbsp;
+	설비 명 &nbsp;<input type="text" id="asset-name">&nbsp;&nbsp;&nbsp;
+	
+
+
+    </div>
+</div>
+</px-card>
+</template>
+</dom-module>
+
+<script>
+Polymer({
+	is: 'my-facility-add-inquiry-card',
+	properties: {
+		identifyUri: {
+			type: String
+		},
+		arr_energy: {
+			type: Array,
+			notify: true
+		}
+	},
+	
+	
+    // initialization
+	ready: function() {	
+			//this.hideCard();
+			this.getMasterData('/codeinstance');
+		
+		
+    },
+
+    getMasterData: function(uri){
+				var self = this;
+				var arr_team = [];
+				var arr_sub_facility = [];
+				var arr_sub_process = [];
+				
+	
+					this.getData('/api/asset' + uri).then(function(data) {
+				//	console.log("Grid data: " + JSON.stringify(data));
+					for(i=0; i<data.length; i++){
+			
+						if(data[i].classification == "/codeclassification/sub-team"){
+							arr_team.push(data[i]);
+					   }else if(data[i].classification == "/codeclassification/sub-facility-group"){
+							arr_sub_facility.push(data[i]);
+						}else if(data[i].classification == "/codeclassification/sub-process"){
+							arr_sub_process.push(data[i]);
+						}else{}
+					}
+			//console.log("realArr", arr_facility);
+		
+		 	var select_team = document.getElementById("team");
+		 	var select_sub_facility = document.getElementById("sub_facility_group");
+		 	var select_sub_process = document.getElementById("sub_process");
+
+		 
+		 	
+		 	for(index in arr_team){
+		 		select_team.options[select_team.options.length] = new Option(arr_team[index].value, arr_team[index].code);
+		 	}
+		 	for(index in arr_sub_facility){
+		 		select_sub_facility.options[select_sub_facility.options.length] = new Option(arr_sub_facility[index].value, arr_sub_facility[index].code);
+		 	}
+		 	for(index in arr_sub_process){
+		 		select_sub_process.options[select_sub_process.options.length] = new Option(arr_sub_process[index].value, arr_sub_process[index].code);
+		 	}
+		});
+	},
+	virtual_check: function(){
+			var y = document.getElementById("virtual_check");
+			
+				if(y.checked = true){
+					console.log("bom");
+				}else{}
+	},
+   new_submitData: function(){
+   	var self = this;
+    	self.updateDeck({'command': 'new' + self.identifyUri});
+		
+   },
+   initModal: function(uri) {
+    var self = this;
+    console.log("uri", uri);
+				var arr_modal_sub_team = [];
+				var arr_modal_sub_facility = [];
+				var arr_modal_sub_process = [];
+				
+	
+					self.getData('/api/asset' + uri).then(function(data) {
+				//console.log("Grid data: " + JSON.stringify(data));
+					for(i=0; i<data.length; i++){
+			
+						if(data[i].classification == "/codeclassification/sub-team"){
+							arr_modal_sub_team.push(data[i]);
+					   }else if(data[i].classification == "/codeclassification/sub-facility-group"){
+							arr_modal_sub_facility.push(data[i]);
+						}else if(data[i].classification == "/codeclassification/sub-process"){
+							arr_modal_sub_process.push(data[i]);
+						}else{}
+					}
+   		
+   			 var select_sub_team = document.getElementById("modal_sub_team");
+   			 var select_sub_facility = document.getElementById("modal_facility_sub_group");
+   			 var select_sub_process = document.getElementById("modal_sub_process");
+
+    		for(index in arr_modal_sub_team){
+		 		select_sub_team.options[select_sub_team.options.length] = new Option(arr_modal_sub_team[index].value, arr_modal_sub_team[index].code);
+		 	}
+		 	for(index in arr_modal_sub_facility){
+		 		select_sub_facility.options[select_sub_facility.options.length] = new Option(arr_modal_sub_facility[index].value, arr_modal_sub_facility[index].code);
+		 	}
+		 	for(index in arr_modal_sub_process){
+		 		select_sub_process.options[select_sub_process.options.length] = new Option(arr_modal_sub_process[index].value, arr_modal_sub_process[index].code);
+		 	}
+		});
+    	
+    		//this.getModalDetailEnergyEfficiencyGrid('/modal-detail-energy-efficiency');
+  	},
+   getModalDetailEnergyEfficiencyGrid: function(uri) {
+    var self = this;
+    self.getData('/api/datagrid' + uri).then(function(data) {
+      self.allData = data.tableData;
+      var uiColumn = data.columns;
+      var uiData = [];
+
+      data.tableData.forEach(function(row) {
+        data.columns.forEach(function(col) {
+          uiRow[col.label] = row[col.field];
+        });
+        uiData.push(uiRow);
+      });
+      self.$.modalDetailEnergyEfficiencyGrid.tableData = uiData;
+    });
+   },
+  	searchFacility: function() {
+    var self = this;
+    self.initModal('/codeinstance');
+   
+  	},
+  	modalClose: function() {
+    var modal = document.getElementById("modal-facility-master");
+    modal.modalButtonClicked();
+  	},
+  	datemodalClose: function() {
+  	 var datemodal = document.getElementById("modal-period-choose")
+  	 datemodal.modalButtonClicked();
+  	},
+	deckStateChanged: function(newState, oldState) {
+		var self = this;
+	   self.showCard();
+	   console.log("identify", self.identifyUri);
+    },
+	
+  
+	behaviors: [px.card]
+});
+</script>

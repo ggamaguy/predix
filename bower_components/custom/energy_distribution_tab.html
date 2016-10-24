@@ -1,0 +1,468 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-theme/px-theme.html"/>
+<link rel="import" href="../px-tabs/px-tab-set.html"/>
+<link rel="import" href="../polymer-font-awesome/polymer-font-awesome.html"/>
+<link rel="import" href="../px-modal/px-modal.html"/>
+<link rel="import" href="../px-data-table/px-data-table.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+
+<dom-module id="energy-distribution-tabs">
+  <template id = "distribution-template">
+    <px-card id="distibution_card">
+    <section style="padding-top:30px;">
+      <px-tab-set id="tab-set" selected="{{selectedTab}}">
+        <px-tab on-tap="initEl"id="tab1">기본 정보</px-tab>
+        <px-tab style="display:none" id="tab2">설비 배분 정보</px-tab>
+        <px-tab style="display:none" id="tab3">조직 배분 정보</px-tab>
+        <px-tab style="display:none" id="tab4">에너지 이용 배분 정보</px-tab>
+        <px-tab style="display:none" id="tab5">기능위치 배분 정보</px-tab>
+      </px-tab-set>
+
+      <px-tab-pages class="tab-page-style" selected="{{selectedTab}}">
+
+        <div id="tab1" style="margin:auto;width:400px;height:100%;margin-top:30px;">
+          <button  style="margin-left:10px;float:right" class="btn" id="delete_tab1" on-tap="_delete">삭제</button>
+          <button  style="float:right" class="btn" id="update_tab1" on-tap="_update">저장</button>
+          <p class="labelTextStyle">상위 계측기 코드</p>
+          <input id="high_meter_code_tab1"class="inputBoxDistribution" type="text" disabled="true">
+          <p class="labelTextStyle">상위 계측기 명</p>
+          <input id="high_meter_name_tab1"class="inputBoxDistribution" type="text" disabled="true">
+          <p class="labelTextStyle">하위 계측기 코드</p>
+          <input id="low_meter_code_tab1" style="width:90px;" class="inputBoxDistribution" type="text" disabled="true">
+          <div style="float:left;width:40px;height:21px;margin:15px auto auto auto;">
+            <px-modal style="clear:both;"
+              btn-modal-positive="확인"
+              btn-modal-negative="취소"
+              modal-heading="장비 Master">
+              <button style="display:none;" class="btn btn--primary modal-trigger" id="low_meter_code_tab1_modal_open">검색</button>
+              <table style="margin-top:10px;">
+                <tr >
+                  <td colspan="6" style="text-align:right;margin-right:20px;">
+                    <button id="tab1_modal_search">조회</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><p style="margin:auto;text-align:right;padding-right:10px;">설비 코드</p></td>
+                  <td><select id="facility_code_tab1_modal" style="margin:auto;width:100%;"items="{{facility_code_list_tab1_modal}}"></select></td>
+                  <td><p style="margin:auto;text-align:right;padding-right:10px;">설비 명</p></td>
+                  <td colspan="3"><input id="facility_name_tab1_modal" type="text" style="margin:auto;width:100%;"></td>
+                </tr>
+                <tr>
+                  <td><p style="margin:auto;text-align:right;padding-right:10px;">설비 그룹</p></td>
+                  <td><select id="facility_sub_group_tab1_modal" style="margin:auto;width:100%;"items="{{facility_sub_group_list_tab1_modal}}"></select></td>
+                  <td><p style="text-align:right;margin:auto;padding-right:10px;">조직</p></td>
+                  <td><select id="sub_team_tab1_modal" style="margin:auto;width:100%;"items="{{sub_team_list_modal_tab1}}"></select></td>
+                  <td><p style="text-align:right;padding-right:10px;margin:auto;">공정</p></td>
+                  <td><select id="sub_process_tab1_modal" style="width:100%;margin:auto;" items="{{sub_process_list_modal_tab1}}"></select></td>
+                </tr>
+              </table>
+              <px-data-table id="tab2_modal_table" style="margin-top:10px;">
+                <px-data-table-column name="설비코드"></px-data-table-column>
+                <px-data-table-column name="설비명"></px-data-table-column>
+                <px-data-table-column name="설비 그룹"></px-data-table-column>
+                <px-data-table-column name="공정"></px-data-table-column>
+                <px-data-table-column name="조직"></px-data-table-column>
+              </px-data-table>
+
+            </px-modal>
+          </div>
+          <p class="labelTextStyle">하위 계측기 명</p>
+          <input id="low_meter_name" class="inputBoxDistribution" type="text" disabled="true">
+          <p class="labelTextStyle">부하 구분</p>
+          <select id="low_classification" class="inputBoxDistribution selectInputBoxDistribution"></select>
+          <p class="labelTextStyle">가상 개소 여부</p>
+          <select id="virtual_check" class="inputBoxDistribution selectInputBoxDistribution"></select>
+        </div>
+
+        <div id="tab2" style="margin:auto;width:600px;height:100%;margin-top:30px;">
+          <button  style="margin-left:10px;float:right" class="btn" id="delete_tab2" on-tap="_delete">삭제</button>
+          <button  style="float:right" class="btn" id="update_tab2" on-tap="_update">저장</button>
+          <div style="clear:both;float:left;width:100%;">
+            <table style="margin:auto;margin-top:10px;">
+              <tr>
+                <td><p style="margin:auto;width:110px;">상위 계측기 명</p></td>
+                <td><input type="text" style="width:100px;text-align:center;" id="high_meter_name_tab2" disabled="true"></td>
+                <td><p style="margin:auto;width:110px;">하위 계측기 코드</p></td>
+                <td><input type="text" style="width:100px;text-align:center;" id="low_meter_code_tab2" disabled="true"></td>
+              </tr>
+            </table>
+            <table style="width:100%;margin-top:15px;border-style:solid;border-width:1px;border-radius:5px;">
+              <tr>
+                <td><p style="margin:auto;width:100%;">설비코드</p></td>
+                <td><input id="facility_code_tab2" type="text" style="width:100%;margin:auto;"></input></td>
+                <td style="text-align:left;">
+                  <px-modal style="clear:both;"
+                  btn-modal-positive="확인"
+                  btn-modal-negative="취소"
+                  modal-heading="장비 Master">
+                  <button style="display:block;" class="btn btn--primary modal-trigger" id="facility_code_modal_open">검색</button>
+                  <table style="margin-top:10px;">
+                    <tr >
+                      <td colspan="6" style="text-align:right;margin-right:20px;">
+                        <button id="tab2_modal_search">조회</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><p style="margin:auto;text-align:right;padding-right:10px;">설비 코드</p></td>
+                      <td><select id="facility_code_tab2_modal" style="margin:auto;width:100%;"items="{{facility_code_list_tab2_modal}}"></select></td>
+                      <td><p style="margin:auto;text-align:right;padding-right:10px;">설비 명</p></td>
+                      <td colspan="3"><input id="facility_name_tab2_modal" type="text" style="margin:auto;width:100%;"></td>
+                    </tr>
+                    <tr>
+                      <td><p style="margin:auto;text-align:right;padding-right:10px;">설비 그룹</p></td>
+                      <td><select id="facility_sub_group_tab2_modal" style="margin:auto;width:100%;"items="{{facility_sub_group_list_tab2_modal}}"></select></td>
+                      <td><p style="text-align:right;margin:auto;padding-right:10px;">조직</p></td>
+                      <td><select id="sub_team_tab2_modal" style="margin:auto;width:100%;"items="{{sub_team_list_modal_tab2}}"></select></td>
+                      <td><p style="text-align:right;padding-right:10px;margin:auto;">공정</p></td>
+                      <td><select id="sub_process_tab2_modal" style="width:100%;margin:auto;" items="{{sub_process_list_modal_tab2}}"></select></td>
+                    </tr>
+                  </table>
+                  <px-data-table id="tab2_modal_table" style="margin-top:10px;">
+                    <px-data-table-column name="설비코드"></px-data-table-column>
+                    <px-data-table-column name="설비명"></px-data-table-column>
+                    <px-data-table-column name="설비 그룹"></px-data-table-column>
+                    <px-data-table-column name="공정"></px-data-table-column>
+                    <px-data-table-column name="조직"></px-data-table-column>
+                  </px-data-table>
+                </px-modal>
+                </td><td></td><td></td><td></td>
+              </tr>
+              <tr>
+                <td><p style="margin:auto;width:100%;">배분 기준</p></td>
+                <td><select value="normal" style="width:100%;margin:auto;"id="distribution_metric_tab2" on-change="_distribution_metric">
+                  <option value="normal">일반</option>
+                  <option value="ratio">비율</option>
+                  <option value="fixed">고정</option>
+                </select></td>
+                <td><p style="margin:auto;width:100%;">비율값</p></td>
+                <td><input id = "rational_value_tab2" style="width:100%;" type="text" disabled="true"></td>
+                <td><p style="margin:auto;width:100%;">고정값</p></td>
+                <td><input id="fixed_value_tab2" style="width:100%;" type="text" disabled="fasle"></td>
+                <td style="width:10px;"></td>
+              </tr>
+              <tr>
+            </table>
+            <div style="margin:10px auto auto auto;">
+              <px-data-table id="dataGrid_tab3" selectable>
+                <px-data-table-column name="설비코드"></px-data-table-column>
+                <px-data-table-column name="설비명"></px-data-table-column>
+                <px-data-table-column name="배분기준"></px-data-table-column>
+                <px-data-table-column name="비율값"></px-data-table-column>
+                <px-data-table-column name="고정값"></px-data-table-column>
+              </px-data-table>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab3" style="margin:auto;width:600px;height:100%;margin-top:30px;">
+          <button  style="margin-left:10px;float:right" class="btn" id="delete_tab3" on-tap="_delete">삭제</button>
+          <button  style="float:right" class="btn" id="update_tab3" on-tap="_update">저장</button>
+          <div style="clear:both;float:left;width:100%;">
+            <table style="margin:auto;margin-top:10px;">
+              <tr>
+                <td><p style="margin:auto;width:110px;">상위 계측기 명</p></td>
+                <td><input type="text" style="width:100px;text-align:center;" id="high_meter_name_tab3" disabled="true"></td>
+                <td><p style="margin:auto;width:110px;">하위 계측기 코드</p></td>
+                <td><input type="text" style="width:100px;text-align:center;" id="low_meter_code_tab3" disabled="true"></td>
+              </tr>
+            </table>
+            <table style="width:100%;margin-top:15px;border-style:solid;border-width:1px;border-radius:5px;">
+              <tr>
+                <td><p style="margin:auto;width:100%;">하위 조직</p></td>
+                <td><select id="facility_sub_group" style="width:100%;margin:auto;"></select></td>
+                <td></td><td></td><td></td><td></td>
+              </tr>
+              <tr>
+                <td><p style="margin:auto;width:100%;">배분 기준</p></td>
+                <td><select value="normal" style="width:100%;margin:auto;"id="distribution_metric_tab3" on-change="_distribution_metric">
+                  <option value="normal">일반</option>
+                  <option value="ratio">비율</option>
+                  <option value="fixed">고정</option>
+                </select></td>
+                <td><p style="margin:auto;width:100%;">비율값</p></td>
+                <td><input id = "rational_value_tab3" style="width:100%;" type="text" disabled="true"></td>
+                <td><p style="margin:auto;width:100%;">고정값</p></td>
+                <td><input id="fixed_value_tab3" style="width:100%;" type="text" disabled="true"></td>
+                <td style="width:10px;"></td>
+              </tr>
+              <tr>
+            </table>
+            <div style="margin:10px auto auto auto;">
+              <px-data-table id="dataGrid_tab3" selectable>
+                <px-data-table-column name="설비코드"></px-data-table-column>
+                <px-data-table-column name="설비명"></px-data-table-column>
+                <px-data-table-column name="배분기준"></px-data-table-column>
+                <px-data-table-column name="비율값"></px-data-table-column>
+                <px-data-table-column name="고정값"></px-data-table-column>
+              </px-data-table>
+            </div>
+          </div>
+        </div>
+
+        <div id = "tab4" style="margin:auto;width:600px;height:100%;margin-top:30px;">
+          <button  style="margin-left:10px;float:right" class="btn" id="delete_tab4" on-tap="_delete">삭제</button>
+          <button  style="float:right" class="btn" id="update_tab4" on-tap="_update">저장</button>
+          <div style="clear:both;float:left;width:100%;">
+            <table style="margin:auto;margin-top:10px;">
+              <tr>
+                <td><p style="margin:auto;width:110px;">상위 계측기 명</p></td>
+                <td><input type="text" style="width:100px;text-align:center;" id="high_meter_name_tab4" disabled="true"></td>
+                <td><p style="margin:auto;width:110px;">하위 계측기 코드</p></td>
+                <td><input type="text" style="width:100px;text-align:center;" id="low_meter_code_tab4" disabled="true"></td>
+              </tr>
+            </table>
+            <table style="width:100%;margin-top:15px;border-style:solid;border-width:1px;border-radius:5px;">
+              <tr>
+                <td><p style="margin:auto;width:100%;">에너지 이용</p></td>
+                <td><select id="energy_usage_code" style="width:100%;margin:auto;"></select></td>
+                <td></td><td></td><td></td><td></td>
+              </tr>
+              <tr>
+                <td><p style="margin:auto;width:100%;">배분 기준</p></td>
+                <td><select value="normal" style="width:100%;margin:auto;"id="distribution_metric_tab4" on-change="_distribution_metric">
+                  <option value="normal">일반</option>
+                  <option value="ratio">비율</option>
+                  <option value="fixed">고정</option>
+                </select></td>
+                <td><p style="margin:auto;width:100%;">비율값</p></td>
+                <td><input id = "rational_value_tab4" style="width:100%;" type="text" disabled="true"></td>
+                <td><p style="margin:auto;width:100%;">고정값</p></td>
+                <td><input id="fixed_value_tab4" style="width:100%;" type="text" disabled="true"></td>
+                <td style="width:10px;"></td>
+              </tr>
+              <tr>
+            </table>
+            <div style="margin:10px auto auto auto;">
+              <px-data-table id="dataGrid_tab4" selectable>
+                <px-data-table-column name="설비코드"></px-data-table-column>
+                <px-data-table-column name="설비명"></px-data-table-column>
+                <px-data-table-column name="배분기준"></px-data-table-column>
+                <px-data-table-column name="비율값"></px-data-table-column>
+                <px-data-table-column name="고정값"></px-data-table-column>
+              </px-data-table>
+            </div>
+          </div>
+        </div>
+
+        <div id = "tab5" style="margin:auto;width:600px;height:100%;margin-top:30px;">
+          <button  style="margin-left:10px;float:right" class="btn" id="delete" on-tap="_delete">삭제</button>
+          <button  style="float:right" class="btn" id="insert" on-tap="_update">저장</button>
+          <div style="clear:both;float:left;width:100%;">
+            <table style="margin:auto;margin-top:10px;">
+              <tr>
+                <td><p style="margin:auto;width:110px;">상위 계측기 명</p></td>
+                <td><input type="text" style="width:100px;text-align:center;" id="high_meter_name_tab5" disabled="true"></td>
+                <td><p style="margin:auto;width:110px;">하위 계측기 코드</p></td>
+                <td><input type="text" style="width:100px;text-align:center;" id="low_meter_code_tab5" disabled="true"></td>
+              </tr>
+            </table>
+            <table style="width:100%;margin-top:15px;border-style:solid;border-width:1px;border-radius:5px;">
+              <tr>
+                <td><p style="margin:auto;width:100%;">기능위치</p></td>
+                <td><select id="sub_flocation_code" style="width:100%;margin:auto;"></select></td>
+                <td></td><td></td><td></td><td></td>
+              </tr>
+              <tr>
+                <td><p style="margin:auto;width:100%;">배분 기준</p></td>
+                <td><select value="normal" style="width:100%;margin:auto;"id="distribution_metric_tab5" on-change="_distribution_metric">
+                  <option value="normal">일반</option>
+                  <option value="ratio">비율</option>
+                  <option value="fixed">고정</option>
+                </select></td>
+                <td><p style="margin:auto;width:100%;">비율값</p></td>
+                <td><input id = "rational_value_tab5" style="width:100%;" type="text" disabled="true"></td>
+                <td><p style="margin:auto;width:100%;">고정값</p></td>
+                <td><input id="fixed_value_tab5" style="width:100%;" type="text" disabled="true"></td>
+                <td style="width:10px;"></td>
+              </tr>
+              <tr>
+            </table>
+            <div style="margin:10px auto auto auto;">
+              <px-data-table id="dataGrid_tab5" selectable>
+                <px-data-table-column name="설비코드"></px-data-table-column>
+                <px-data-table-column name="설비명"></px-data-table-column>
+                <px-data-table-column name="배분기준"></px-data-table-column>
+                <px-data-table-column name="비율값"></px-data-table-column>
+                <px-data-table-column name="고정값"></px-data-table-column>
+              </px-data-table>
+            </div>
+          </div>
+        </div>
+      </px-tab-pages>
+    </section>
+  </px-card>
+  </template>
+  <script>
+    Polymer({
+      is: 'energy-distribution-tabs',
+      properties: {
+        selectedTab: {
+          type: String
+        },
+        deckState: {
+          type: Object
+        },
+        gridData:{
+          type: Array,
+          notify: true
+        }
+      },
+      _distribution_metric: function(event){
+
+        var option = event.target.value;
+        var fixed_input_id = _get_fixed_value_inputId(event.target.id);
+        var rational_input_id = _get_rational_value_inputId(event.target.id);
+        if(option == 'normal'){
+          Polymer.dom(this.$$('#'+fixed_input_id)).setAttribute('disabled','true');
+          Polymer.dom(this.$$('#'+rational_input_id)).setAttribute('disabled','true');
+        }
+        if(option == 'ratio'){
+          Polymer.dom(this.$$('#'+fixed_input_id)).setAttribute('disabled','true');
+          Polymer.dom(this.$$('#'+rational_input_id)).removeAttribute('disabled');
+        }
+        if(option == 'fixed'){
+          Polymer.dom(this.$$('#'+fixed_input_id)).removeAttribute('disabled');
+          Polymer.dom(this.$$('#'+rational_input_id)).setAttribute('disabled','true');
+        }
+      },
+      ready: function() {
+        this.selectedTab = 0;
+      },
+      initEl: function(){
+        Polymer.dom(this.$$('#update_tab1')).setAttribute('on-tap','_update');
+        Polymer.dom(this.$$('#low_meter_code_tab1_modal_open')).setAttribute('style','display:none;');
+        Polymer.dom(this.$$('#high_meter_code_tab1')).setAttribute('value','');
+        Polymer.dom(this.$$('#high_meter_name_tab1')).setAttribute('value','');
+        Polymer.dom(this.$$('#low_meter_code_tab1')).setAttribute('value','');
+        Polymer.dom(this.$$('#low_meter_code_tab1')).setAttribute('disabled','');
+        Polymer.dom(this.$$('#low_meter_name')).setAttribute('value','');
+        Polymer.dom(this.$$('#low_classification')).setAttribute('value','');
+        Polymer.dom(this.$$('#virtual_check')).setAttribute('value','');
+      },
+      _insert: function(event){
+
+      },
+      _update: function(event){
+
+      },
+      _delete: function(event){
+
+      },
+      deckStateChanged: function(newDeckState, oldDeckState) {
+        if(newDeckState.id == 'insertNode'){
+          Polymer.dom(this.$$('#update_tab1')).setAttribute('on-tap','_insert');
+          Polymer.dom(this.$$('#low_meter_code_tab1_modal_open')).setAttribute('style','display:block;');
+          Polymer.dom(this.$$('#high_meter_code_tab1')).setAttribute('value','');
+          Polymer.dom(this.$$('#high_meter_name_tab1')).setAttribute('value','');
+          Polymer.dom(this.$$('#low_meter_code_tab1')).setAttribute('value','');
+          Polymer.dom(this.$$('#low_meter_code_tab1')).removeAttribute('disabled');
+          Polymer.dom(this.$$('#low_meter_name')).setAttribute('value','');
+          Polymer.dom(this.$$('#low_classification')).setAttribute('value','');
+          Polymer.dom(this.$$('#virtual_check')).setAttribute('value','');
+          this.selectedTab = 0;
+        }
+        if(newDeckState.id == 'tree')
+        if(newDeckState.data == 'facility'){
+          Polymer.dom(this.$$('#tab2')).setAttribute('style','');
+          Polymer.dom(this.$$('#tab3')).setAttribute('style','display:none;');
+          Polymer.dom(this.$$('#tab4')).setAttribute('style','display:none;');
+          Polymer.dom(this.$$('#tab5')).setAttribute('style','display:none;');
+
+        }
+        if(newDeckState.data  == 'sub_team'){
+          Polymer.dom(this.$$('#tab3')).setAttribute('style','');
+          Polymer.dom(this.$$('#tab2')).setAttribute('style','display:none;');
+          Polymer.dom(this.$$('#tab4')).setAttribute('style','display:none;');
+          Polymer.dom(this.$$('#tab5')).setAttribute('style','display:none;');
+        }
+        if(newDeckState.data  == 'energy_usage'){
+          Polymer.dom(this.$$('#tab4')).setAttribute('style','');
+          Polymer.dom(this.$$('#tab2')).setAttribute('style','display:none;');
+          Polymer.dom(this.$$('#tab3')).setAttribute('style','display:none;');
+          Polymer.dom(this.$$('#tab5')).setAttribute('style','display:none;');
+        }
+        if(newDeckState.data  == 'flocation'){
+          Polymer.dom(this.$$('#tab5')).setAttribute('style','');
+          Polymer.dom(this.$$('#tab2')).setAttribute('style','display:none;');
+          Polymer.dom(this.$$('#tab3')).setAttribute('style','display:none;');
+          Polymer.dom(this.$$('#tab4')).setAttribute('style','display:none;');
+        }
+      },
+      behaviors: [px.card]
+    });
+    function _get_fixed_value_inputId(optionId){
+      var fixed_input_id;
+      if(optionId == 'distribution_metric_tab2'){
+        fixed_input_id = 'fixed_value_tab2';
+      }
+      if(optionId == 'distribution_metric_tab3'){
+        fixed_input_id = 'fixed_value_tab3';
+      }
+      if(optionId == 'distribution_metric_tab4'){
+        fixed_input_id = 'fixed_value_tab4';
+      }
+      if(optionId == 'distribution_metric_tab5'){
+        fixed_input_id = 'fixed_value_tab5';
+      }
+      return fixed_input_id;
+    }
+    function _get_rational_value_inputId(optionId){
+      var rational_input_id;
+      if(optionId == 'distribution_metric_tab2'){
+        rational_input_id = 'rational_value_tab2';
+      }
+      if(optionId == 'distribution_metric_tab3'){
+        rational_input_id = 'rational_value_tab3';
+      }
+      if(optionId == 'distribution_metric_tab4'){
+        rational_input_id = 'rational_value_tab4';
+      }
+      if(optionId == 'distribution_metric_tab5'){
+        rational_input_id = 'rational_value_tab5';
+      }
+      return rational_input_id;
+    }
+
+  </script>
+
+
+  <style>
+  .tab-page-style{
+    
+    height:450px;
+    margin:auto;
+  }
+  .inputBoxDistribution{
+    float:left;
+  	text-align:center;
+  	width:121px;
+  	margin:15px auto auto auto;
+  }
+  .selectInputBoxDistribution{
+  	width:125px;
+  }
+  .labelTextStyle{
+    clear:both;
+    float:left;
+  	text-align:right;
+  	width:150px;
+  	margin:auto;
+    padding-right: 20px;
+    margin-top:15px;
+  }
+  .rectangle{
+    clear:both;
+    margin-top: 60px;
+    padding: 10px;
+    height:50px;
+    border-radius: 20px;
+    border-style: solid;
+    border-width: 1px;
+  }
+  td{
+    text-align: center;
+    width:100px;
+  }
+
+  </style>
+</dom-module>

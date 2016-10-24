@@ -1,0 +1,4 @@
+<px-deck context="{{context}}">
+<energy-var-quiry-card id="energy-variable" title="에너지 관련 변수 정의"></energy-var-quiry-card>
+<energy-var-table id="table" title="에너지 관련 변수 조회"></energy-var-table>
+</px-deck>

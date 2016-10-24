@@ -1,0 +1,79 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+<link rel="import" href="../px-data-table/px-data-table.html"/>
+<link rel="import" href="../px-data-table/px-example-highlight.html"/>
+
+<dom-module id="energy-var-register-table-left">
+  <template>
+      <px-card header-text={{title}}>
+      <div style="padding-top:30px;">
+        <px-data-table id="varGrid" selectable selected-row="selectedRow" tableData={{data}}>
+          <px-data-table-column filterable name="사업장명"></px-data-table-column>
+          <px-data-table-column filterable name="부문종류"></px-data-table-column>
+          <px-data-table-column filterable name="부문코드"></px-data-table-column>
+          <px-data-table-column filterable name="부문명"></px-data-table-column>
+          <px-data-table-column filterable name="변수명"></px-data-table-column>
+          <px-data-table-column filterable name="단위"></px-data-table-column>
+          <px-data-table-column filterable name="날짜"></px-data-table-column>
+          <px-data-table-column filterable editable name="값"></px-data-table-column>
+        </px-data-table>
+      </div>
+      </px-card>
+  </template>
+</dom-module>
+<script>
+Polymer({
+  is:'energy-var-register-table-left',
+  properties:{
+    data:{
+      type:Array,
+      notify:true
+    }
+  },
+  init: function(){
+
+  },
+  getGridData: function(uri, parameter) {
+		var self = this;
+    px.dealer.httpRequest({
+    url: '/api/asset-list' + uri,
+    method: 'POST',
+    data:parameter
+    }).then(function(data){
+        // on fulfillment
+        //console.log("Grid data: " , data);
+  			self.allData = data.tableData;
+  			var uiColumn = data.columns;
+  			var uiData = [];
+
+  			//console.log("column", data.columns[0].label);
+
+  		  data.tableData.forEach(function(row){
+  			     var uiRow = {};
+
+  			     data.columns.forEach(function(col){
+  			        uiRow[col.label] = row[col.field]; //key:value
+  			     });
+             var date = new Date(uiRow["날짜"]);
+             uiRow["날짜"] = date.toISOString().substring(0, 10);
+
+  			     uiData.push(uiRow);
+        });
+        self.$.varGrid.tableData = uiData;
+    });
+  },
+  deckStateChanged: function(newState, oldState) {
+    var self = this;
+
+    if(newState.gridCommand == "inquiry"){
+      var parameter = JSON.stringify(newState.parameters);
+      this.getGridData('/energy-variable-data/full', parameter);
+    }
+
+  },
+  selectedRow: function(){
+
+  },
+  behaviors: [px.card]
+});
+</script>

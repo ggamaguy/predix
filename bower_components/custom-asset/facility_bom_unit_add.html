@@ -1,0 +1,157 @@
+<link rel="import" href="../polymer/polymer.html" />
+<link rel="import" href="../px-card/px-card.html" />
+<link rel="import" href="../px-data-table/px-data-table.html"/>
+
+<script src="../moment/min/moment.min.js"></script>
+
+
+<dom-module id="my-facility-bom-unit-insert-card">
+  <template>
+    <px-card header-text={{title}}>
+     	<div class="layout" style="float:left;">
+					<div style='margin:5px;'>Unit 코드</div><br>
+					<div style='margin:5px;'>Unit 이름</div><br>
+				</div>
+				<div class="layout"style="float:left;">
+					<div style='margin:5px;margin-bottom:25px;'><input type="text" id="insertUnitCode"></div>
+					<div style='margin:5px;'><input type="text" id="insertUnitName"></div>
+				</div>
+				<br><br><br><br><br><br><br>
+				<!--
+				<px-data-table striped table-data="{{data}}">
+      <px-data-table-column id="pysics" name="물리량 코드" ...></px-data-table-column>
+      <px-data-table-column name="이름" ...></px-data-table-column>
+      <px-data-table-column name="계측/수기/일반" >
+      </px-data-table-column>
+      <px-data-table-column name="값" ...></px-data-table-column>
+      <px-data-table-column name="TAG ID" ...></px-data-table-column>
+    </px-data-table>-->
+    		<px-data-table id="facilityUnitInsertGrid" striped table-rows>
+          <px-data-table-column
+            name="물리량코드"
+            sortable >
+          </px-data-table-column>
+          <px-data-table-column
+            name="물리량명"
+            sortable
+            editable >
+          </px-data-table-column>
+          <px-data-table-column
+            name="타입"
+            sortable
+            editable
+            type="dropdown"
+            dropdown-items='[{"key":"GENERAL","val":"Mike"},{"key":"METERING","val":"Maria"},{"key":"WRITING","val":"Wei"}]'
+            >
+          </px-data-table-column>
+          <px-data-table-column
+            name="값"
+            sortable
+            editable >
+          </px-data-table-column>
+          <px-data-table-column
+            name="TAG_ID"
+            sortable
+            editable >
+          </px-data-table-column>
+        </px-data-table>
+    </px-card>
+  </template>
+</dom-module>
+<script>
+  Polymer({
+    is: 'my-facility-bom-unit-insert-card',
+    properties: {
+  		masterCode: {
+  			type: String,
+        default: ""
+  		}
+    },
+    init: function() {
+    		var self = this;
+    		this.getFacilityUnitInsertGridData('/facility-unit-master');
+  			},
+
+  		getFacilityUnitInsertGridData: function(uri, parameter) {
+        var self = this;
+        console.log("[MinjuneL] adderess = "+uri+"/"+parameter+"/getChar");
+        px.dealer.httpRequest({
+        url: uri+"/"+parameter+"/getChar",
+        method: 'GET'
+        }).then(function(data){
+          // on fulfillment
+          //console.log("Grid data: " , data);
+          self.allData = data.tableData;
+          var uiColumn = data.columns;
+          var uiData = [];
+
+          //console.log("column", data.columns[0].label);
+
+          data.tableData.forEach(function(row){
+               var uiRow = {};
+
+               data.columns.forEach(function(col){
+                  uiRow[col.label] = row[col.field]; //key:value
+               });
+
+               uiData.push(uiRow);
+          });
+          self.$.facilityUnitInsertGrid.tableData = uiData;
+        });
+  		},
+
+		insertFacilityUnit: function(){
+			var self = this;
+
+			px.dealer.httpRequest({
+					url: '/api/asset/' + self.insertFacilityUnitUri,
+					method: 'POST',
+					data: this.buildQuery(),
+			}).then(function(data){
+			console.log("post?", data);
+			alert("정상적으로 등록되었습니다.");
+			window.location.reload();
+		});
+	 },
+
+	 buildQuery: function(){
+			var self = this;
+
+			var input_facility_name = document.getElementById("insertUnitName").value;
+			var input_facility_code = document.getElementById("insertUnitCode").value;
+
+   	var query = [ {
+   					// 설비 BOM 추가 uri 쿼리문 작성 필요
+   			}
+   		]
+
+   		console.log('query', query);
+  			return query;
+
+	},
+  deckStateChanged: function(newDeckState, oldDeckState){
+    var tree;
+    var self = this;
+    if(newDeckState.gridCommand == "setUnit"){
+      var parameter = newDeckState.code;
+
+      console.log("[MinjuneL] sirosiro "+parameter);
+      document.getElementById("insertUnitCode").value = newDeckState.detail.code;
+      document.getElementById("insertUnitCode").setAttribute("readonly", "readonly");
+      document.getElementById("insertUnitName").value = newDeckState.detail.name;
+
+      this.getFacilityUnitInsertGridData('/api/datagrid/facility-unit-char', parameter);
+    }else if(newDeckState.gridCommand == "setTree"){
+      var parameter = newDeckState.parameters;
+      self.masterCode = parameter;
+    }else if(newDeckState.gridCommand == "addUnit"){
+      if(self.masterCode == ""){
+        window.alert("설비를 추가하실 설비 마스터를 선택해주세요.");
+      }else{
+        
+      }
+    }
+  },
+    behaviors: [px.card]
+  });
+</script>

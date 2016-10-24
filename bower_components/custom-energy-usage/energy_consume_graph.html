@@ -1,0 +1,140 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+
+<script src="../moment/min/moment.min.js"></script>
+<script src="../d3/d3.min.js"></script>
+
+<dom-module id="my-energy-consume-graph-card">
+
+  <template>
+    <px-card header-text={{title}}>
+      <div class="card-header-link layout layout--right">
+        <div id="graph-frame"></div>
+      </div>
+    </px-card>
+  </template>
+</dom-module>
+
+<style>
+  .bar {
+    fill: steelblue;
+  }
+  .bar:hover {
+    fill:brown;
+  }
+  .axis {
+    font: 10px sans-serif;
+  }
+  .axis path,
+  .axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+  }
+</style>
+
+<script>
+Polymer({
+  is: 'my-energy-consume-graph-card',
+  properties: {
+    identifyUri: {
+      type: String
+    }
+  },
+  init: function() {
+    this.hideCard();
+  },
+  drawGraph: function() {
+    d3.selectAll('svg').remove();
+    var data = [
+      {
+        "Letter": "A",
+        "Freq": 20
+      },
+      {
+        "Letter": "B",
+        "Freq": 12
+      },
+      {
+        "Letter": "C",
+        "Freq": 47
+      },
+      {
+        "Letter": "D",
+        "Freq": 34
+      },
+      {
+        "Letter": "E",
+        "Freq": 54
+      }
+    ];
+
+    var margin = { top: 20, right: 20, bottom: 70, left: 40 };
+    var width = 600 - margin.left - margin.right;
+    var height = 300 - margin.top - margin.bottom;
+
+    var x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
+    var y = d3.scale.linear().range([height, 0]);
+
+    var xAxis = d3.svg.axis().scale(x).orient("bootom");
+    var yAxis = d3.svg.axis().scale(y).orient("left").ticks(10);
+
+    var svg = d3.select("#graph-frame").append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
+
+    x.domain(data.map(function(d) {
+      return d.Letter;
+    }));
+    y.domain([0, d3.max(data, function(d) {
+      return d.Freq;
+    })]);
+
+    svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0, " + height + ")")
+      .call(xAxis)
+      .selectAll("text")
+      .style("text-anchor", "end")
+      .attr("dx", "-.8em")
+      .attr("dy", "-.55em")
+      .attr("transform", "rotate(-90)");
+
+    svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+      .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 5)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Frequency");
+
+      svg.selectAll("bar")
+        .data(data)
+        .enter().append("rect")
+        .attr("class", "bar")
+        .attr("x", function(d) {
+          return x(d.Letter);
+        })
+        .attr("width", x.rangeBand())
+        .attr("y", function(d) {
+          return y(d.Freq);
+        })
+        .attr("height", function(d) {
+          return height - y(d.Freq);
+        });
+  },
+  deckStateChanged: function(newState, oldState) {
+    var self = this;
+    self.identifyUri = newState.command;
+    if(self.identifyUri == "inquiry") {
+      self.showCard();
+      self.drawGraph();
+    }
+  },
+  behaviors: [px.card]
+});
+</script>

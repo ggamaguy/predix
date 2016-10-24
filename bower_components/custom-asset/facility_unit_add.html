@@ -1,0 +1,242 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+<link rel="import" href="../px-dropdown/px-dropdown.html"/>
+<script src="../moment/min/moment.min.js"></script>
+
+<dom-module id="my-facility-unit-add-card">
+<template>
+<!--<px-card header-text="BASIS INFORMATION">-->
+<px-card header-text={{title}}>
+<div class="card-header-links layout layout--right"></div>
+	<div class="btn-group" style="text-align:right; width:100%; padding-bottom:30px;">
+		<span>
+			<button class="btn" id="newCode" on-click="add_newData">저장</button>
+		</span>
+	</div>
+	<div class="layout">
+		<div class="layout__item u-1/3" style='float:left;'>
+
+			<div class="layout">
+				<div class="layout__item u-1/2" style='float: left;'>
+					<div style='margin:16px;'>사업장</br></div>
+					<div style='margin:16px;'>설비 Unit 명</br></div>
+					<div style='margin:16px;'>설비 Unit 코드</br></div>
+				</div>
+				<div class="layout__item u-1/2" style='float: left;'>
+					<div style='margin-top:18px;margin-bottom:10px;'>
+						<select id="facility_site" ><option value="">전체</option></select>
+					</div>
+					<div style='margin-top:10px;margin-bottom:18px;'>
+						<input type="text" id="facility_name">
+					</div>
+					<div style='margin-top:10px;margin-bottom:8px;'>
+						<input type="text" id="facility_code">
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="layout__item u-2/3" style='float:left;margin-left: 5px;'>
+			<div class="layout">
+				<div class="layout__item u-3/7" style='float:left;'>
+					<div style='margin:16px;'>전체 물리량 목록
+					<div class="selectBox" style="margin-top: 10px;">
+						<select multiple size="10" id="physics_all" multiple="multiple" style="width:200px;">
+     	   			<option value="111">00000041: 설치 일자</option>
+      	  		<option value="222">00000048: 연료 사용량(kg/h)</option>
+        			<option>00000036: 대수</option>
+        			<option>00000025: 구동방식</option>
+        			<option>00000039: 보호등급</option>
+        			<option>00000012: 용량(kVA)</option>
+        			<option>00000123: 주파수(Hz)</option>
+							<option>00000100: 전력</option>
+        	</select>
+        </div>
+        </div>
+					</div>
+				<div class="layout__item u-1/7" style='float:left;'>
+					<!--<div style='margin:16px;'>btn</div>-->
+					<div class="buttonBox" style='margin-top:75px;margin-left: 1px;margin-right: 1px;'>
+						<button name="add" on-click="addPysics">></button>
+						<br><br><br>
+						<button name="remove" on-click="removePysics"><</button>
+					</div>
+				</div>
+				<div class="layout__item u-3/7" style='float:left;'>
+					<div style='margin:16px;'>
+						물리량 목록
+						<div class="layout" style='float: right;'>
+							<button class="btn" id="create_new" on-click="new_submitData">신규</button>
+						</div>
+						<div class="selectBox" style="margin-top: 10px;">
+						<select multiple size="10" id="physics_select" multiple="multiple" style="width:200px;">
+							 <option>00000001: Ambient Temp</option>
+        	</select>
+        </div>
+					</div>
+
+				</div>
+			</div>
+	</div>
+</div>
+</px-card>
+</template>
+</dom-module>
+
+<script>
+Polymer({
+	is: 'my-facility-unit-add-card',
+	properties: {
+		identifyUri: {
+			type: String
+		},
+
+	facilityUnitAddUri: {
+			type: String,
+			reflectToAttributes: true,
+			value: "/emission-factor",
+			notify: true
+		},
+	},
+
+  init: function() {
+    this.hideCard();
+  },
+
+		ready: function() {
+			this.getMasterData('/codeinstance');
+	},
+
+  getMasterData: function(uri){
+			var self = this;
+			var arr_site = [];
+
+			this.getData('/api/asset' + uri).then(function(data) {
+
+			for(i=0; i<data.length; i++){
+				if(data[i].classification == "/codeclassification/site"){
+						arr_site.push(data[i].value);
+		   }else {
+			   }
+			}
+
+		 	var select_site = document.getElementById("facility_site");
+
+		 	for(index in arr_site){
+		 		select_site.options[select_site.options.length] = new Option(arr_site[index], index);
+		 	}
+		});
+	},
+	add_newData: function(){
+	 var self = this;
+	 self.updateDeck({'command': 'add'});
+
+	},
+
+  new_submitData: function(){
+			var self = this;
+
+			px.dealer.httpRequest({
+					url: '/api/asset/' + self.facilityUnitAddUri,
+					method: 'POST',
+					data: this.buildQuery(),
+			}).then(function(data){
+			console.log("post?", data);
+			alert("정상적으로 등록되었습니다.");
+			window.location.reload();
+		});
+	 },
+
+	 buildQuery: function(){
+			var self = this;
+
+			var input_facility_name = document.getElementById("facility_name").value;
+			var input_facility_code = document.getElementById("facility_code").value;
+			var input_facility_site = document.getElementById("facility_site");
+
+   	var query = [ {
+   					//신규 설비 추가 uri 쿼리문 작성 필요
+   			}
+   		]
+
+   		console.log('query', query);
+  			return query;
+
+	},
+
+	deckStateChanged: function(newState, oldState) {
+		var self = this;
+		self.identifyUri = newState.gridCommand;
+		if(self.identifyUri == "new") {
+	   self.showCard();
+      }
+    },
+
+  addPysics: function() {
+ 		 var left_list  = document.getElementById("physics_all");
+ 		 var right_list  = document.getElementById("physics_select");
+ 		 var str   = new Array();
+    var str2   = new Array();
+    var str3   = new Array();
+    var idx   = 0;
+
+  	 for ( i=0; i<left_list.length; i++ ){
+    if( left_list.options[i].selected==true ){
+ 				str[idx]  = left_list.options[i].value;
+     	str2[idx] = left_list.options[i].innerText;
+     	str3[idx] = left_list.options[i].index;
+  	  	idx++;
+   		}
+   	}
+
+   for ( i=0;i< str3.length;i++ ){
+    left_list.remove(str3[i]-i);
+   	}
+
+   if( right_list.length==0 ) {
+    		for( i=0; i<str.length; i++ ) {
+     		right_list.options[i] = new Option(str2[i],str[i]);
+    			}
+   	}
+   else if( right_list.length>0 ) {
+    		for ( i=0; i<str.length; i++ ) {
+     			right_list.options[right_list.length] = new Option(str2[i],str[i]);
+    	   	}
+   	}
+   },
+
+ 	removePysics : function () {
+		var right_list  = document.getElementById("physics_all");
+ 		var left_list  = document.getElementById("physics_select");
+   var str    = new Array();
+   var str2   = new Array();
+   var str3   = new Array();
+   var idx   = 0;
+
+   for( i=0; i<left_list.length; i++ ){
+    if( left_list.options[i].selected==true ){
+     str[idx]  = left_list.options[i].value;
+     str2[idx] = left_list.options[i].innerText;
+     str3[idx] = left_list.options[i].index;
+     idx++;
+    }
+   }
+
+   for( i=0;i< str3.length;i++ ){
+    left_list.remove(str3[i]-i);
+   }
+
+   if( right_list.length==0 ) {
+    for( i=0; i<str.length; i++ ) {
+     right_list.options[i] = new Option(str2[i],str[i]);
+    }
+   }else if( right_list.length>0 ) {
+    for( i=0; i<str.length;i++ ) {
+     right_list.options[right_list.length] = new Option(str2[i],str[i]);
+    }
+   }
+},
+
+	behaviors: [px.card]
+
+});
+</script>

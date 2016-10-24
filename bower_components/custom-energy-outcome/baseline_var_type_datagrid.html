@@ -1,0 +1,70 @@
+<link rel="import" href="../polymer/polymer.html" />
+<link rel="import" href="../px-card/px-card.html" />
+
+<dom-module id="my-energy-variable-model-choose-card">
+  <template>
+    <px-card header-text={{title}}>
+      <div class="layout">
+     	 		<px-data-table id="energyModelChooseGrid" striped table-rows></px-data-table>
+	  		</div>
+  	   <div class="layout" style="float:left;">
+					<div style='margin:5px;margin-top:5px;margin-left:15px;float:left;'>적용기간</div>
+					<div style="float:left;">
+      		<px-datetime-picker id="check_start_time" date-format="YYYY/MM/DD" time-format="hh:mmA" hide-time="true" show-time-zone="none" time-zone="Asia/Seoul"></px-datetime-picker>
+      	</div>
+      	<div style='float:left;margin:5px;margin-top:5px;'>&nbsp;&nbsp;~&nbsp;&nbsp;</div>     
+					<div style="float:left;">
+      		<px-datetime-picker id="check_end_time" date-format="YYYY/MM/DD" time-format="hh:mmA" hide-time="true" show-time-zone="none" time-zone="Asia/Seoul"></px-datetime-picker>
+      	</div>
+      	<div style="float:left;margin:5px;margin-left:15px;">
+						<button class="btn" id="modelChoose">확정</button>      	
+      	</div>      
+      </div>
+    </px-card>
+  </template>
+</dom-module>
+<script>
+  Polymer({
+    is: 'my-energy-variable-model-choose-card',
+    
+    properties: {
+    		identifyUri: {
+      type: String
+    		},
+    gridData: {
+      type: Array,
+      notify: true
+    		}
+  		},
+  
+  init: function() {
+  
+ 	 },
+ 	 
+  ready: function() {
+    this.getEnergyModelChooseGridData('uri');
+  },
+  
+  getEnergyModelChooseGridData: function(uri) {
+    var self = this;
+    self.getData('/api/datagrid' + uri).then(function(data) {
+      self.allData = data.tableData;
+      var uiColumn = data.columns;
+      var uiData = [];
+
+      data.tableData.forEach(function(row) {
+        data.columns.forEach(function(col) {
+          uiRow[col.label] = row[col.field];
+        });
+        uiData.push(uiRow);
+      });
+      self.$.energyModelChooseGrid.tableData = uiData;
+    });
+  },
+    
+    modelChoose : function() {
+			  	 
+  	 },
+    behaviors: [px.card]
+  });
+</script>

@@ -1,0 +1,246 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+
+<script src="../moment/min/moment.min.js"></script>
+<script src="../d3/d3.min.js"></script>
+
+<dom-module id="my-detail-energy-efficiency-graph-card">
+
+  <template>
+    <px-card header-text={{title}}>
+      <div class="card-header-link layout layout--right">
+        <div class="layout__item u-1/6">
+          *효율화 기준 항목 &nbsp;<select id="baseline_criteria"></select>&nbsp; &nbsp;
+          <br></br>
+          <table>
+            <tr>
+              <td>효율<td>
+              <td>
+                <div id="efficiency-graph-frame"></div>
+              </td>
+            </tr>
+            <tr>
+              <td id="baseline_criteria_col"><td>
+              <td>
+                <div id="baseline-graph-frame"></div>
+              </td>
+            </tr>
+          </table>
+          <br></br>
+          <textarea cols="100" rows="5" id="result_message_box"></textarea>
+        </div>
+      </div>
+    </px-card>
+  </template>
+</dom-module>
+
+<style>
+  .bar {
+    fill: steelblue;
+  }
+  .bar:hover {
+    fill:brown;
+  }
+  .axis {
+    font: 10px sans-serif;
+  }
+  .axis path,
+  .axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+  }
+</style>
+
+<script>
+Polymer({
+  is: 'my-detail-energy-efficiency-graph-card',
+  properties: {
+    identifyUri: {
+      type: String
+    }
+  },
+  init: function() {
+    var select_baseline_criteria = document.getElementById("baseline_criteria");
+    select_baseline_criteria.options[0] = new Option("흡입 온도", 0);
+    select_baseline_criteria.options[1] = new Option("습도", 1);
+    select_baseline_criteria.options[2] = new Option("테스트", 2);
+
+      d3.selectAll('svg').remove();
+      var data = [
+        {
+          "Letter": "A",
+          "Freq": 20
+        },
+        {
+          "Letter": "B",
+          "Freq": 12
+        },
+        {
+          "Letter": "C",
+          "Freq": 47
+        },
+        {
+          "Letter": "D",
+          "Freq": 34
+        },
+        {
+          "Letter": "E",
+          "Freq": 54
+        }
+      ];
+
+      var margin = { top: 20, right: 20, bottom: 70, left: 40 };
+      var width = 600 - margin.left - margin.right;
+      var height = 300 - margin.top - margin.bottom;
+
+      var x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
+      var y = d3.scale.linear().range([height, 0]);
+
+      var xAxis = d3.svg.axis().scale(x).orient("bootom");
+      var yAxis = d3.svg.axis().scale(y).orient("left").ticks(10);
+
+      var svg = d3.select("#efficiency-graph-frame").append("svg")
+                  .attr("width", width + margin.left + margin.right)
+                  .attr("height", height + margin.top + margin.bottom)
+                  .append("g")
+                  .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
+
+      x.domain(data.map(function(d) {
+        return d.Letter;
+      }));
+      y.domain([0, d3.max(data, function(d) {
+        return d.Freq;
+      })]);
+
+      svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0, " + height + ")")
+        .call(xAxis)
+        .selectAll("text")
+        .style("text-anchor", "end")
+        .attr("dx", "-.8em")
+        .attr("dy", "-.55em")
+        .attr("transform", "rotate(-90)");
+
+      svg.append("g")
+        .attr("class", "y axis")
+        .call(yAxis)
+        .append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 5)
+        .attr("dy", ".71em")
+        .style("text-anchor", "end")
+        .text("Frequency");
+
+        svg.selectAll("bar")
+          .data(data)
+          .enter().append("rect")
+          .attr("class", "bar")
+          .attr("x", function(d) {
+            return x(d.Letter);
+          })
+          .attr("width", x.rangeBand())
+          .attr("y", function(d) {
+            return y(d.Freq);
+          })
+          .attr("height", function(d) {
+            return height - y(d.Freq);
+          });
+  },
+  drawBaselineGraph: function() {
+    d3.select("#baseline-graph-frame").selectAll('svg').remove();
+    var data = [
+      {
+        "Letter": "A",
+        "Freq": 20
+      },
+      {
+        "Letter": "B",
+        "Freq": 12
+      },
+      {
+        "Letter": "C",
+        "Freq": 47
+      },
+      {
+        "Letter": "D",
+        "Freq": 34
+      },
+      {
+        "Letter": "E",
+        "Freq": 54
+      }
+    ];
+
+    var margin = { top: 20, right: 20, bottom: 70, left: 40 };
+    var width = 600 - margin.left - margin.right;
+    var height = 300 - margin.top - margin.bottom;
+
+    var x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
+    var y = d3.scale.linear().range([height, 0]);
+
+    var xAxis = d3.svg.axis().scale(x).orient("bootom");
+    var yAxis = d3.svg.axis().scale(y).orient("left").ticks(10);
+
+    var svg = d3.select("#baseline-graph-frame").append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
+
+    x.domain(data.map(function(d) {
+      return d.Letter;
+    }));
+    y.domain([0, d3.max(data, function(d) {
+      return d.Freq;
+    })]);
+
+    svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0, " + height + ")")
+      .call(xAxis)
+      .selectAll("text")
+      .style("text-anchor", "end")
+      .attr("dx", "-.8em")
+      .attr("dy", "-.55em")
+      .attr("transform", "rotate(-90)");
+
+    svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+      .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 5)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Frequency");
+
+      svg.selectAll("bar")
+        .data(data)
+        .enter().append("rect")
+        .attr("class", "bar")
+        .attr("x", function(d) {
+          return x(d.Letter);
+        })
+        .attr("width", x.rangeBand())
+        .attr("y", function(d) {
+          return y(d.Freq);
+        })
+        .attr("height", function(d) {
+          return height - y(d.Freq);
+        });
+  },
+  deckStateChanged: function(newState, oldState) {
+    var self = this;
+    self.identifyUri = newState.command;
+    if(self.identifyUri == "inquiry") {
+      self.drawBaselineGraph();
+      var select_baseline_criteria_text = self.$.baseline_criteria.options[self.$.baseline_criteria.value].text;
+      self.$.baseline_criteria_col.innerHTML = select_baseline_criteria_text;
+      self.$.result_message_box.innerHTML = select_baseline_criteria_text + "가 기준값을 OO함 -> 설비 효율 저하";
+    }
+  },
+  behaviors: [px.card]
+});
+</script>

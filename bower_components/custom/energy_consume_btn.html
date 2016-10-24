@@ -1,0 +1,48 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+
+<script src="../moment/min/moment.min.js"></script>
+
+<dom-module id="my-energy-consume-btn-card">
+  <template>
+    <px-card header-text={{title}}>
+      <div class="card-header-link layout layout--right">
+        <div class="layout__item u-1/6">
+          <br>
+            <div class="btn-group">
+              <span style="float: right">
+                <button class="btn" id="inquiry" on-click="inquiryData">조회</button>
+              </span>
+            </div>
+          </br>
+        </div>
+      </div>
+    </px-card>
+  </template>
+</dom-module>
+
+<script>
+Polymer({
+  is: 'my-energy-consume-btn-card',
+  properties: {
+    assetUri: {
+      type: String
+    },
+    identifyUri: {
+      type: String
+    }
+  },
+  init: function() {
+
+  },
+  inquiryData: function() {
+    var self = this;
+    self.updateDeck({'command': 'inquiry'});
+  },
+  deckStateChanged: function(newState, oldState) {
+    var self = this;
+    self.identifyUri = newState.clickedInfo;
+  },
+  behaviors: [px.card]
+});
+</script>

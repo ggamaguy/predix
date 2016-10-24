@@ -1,0 +1,167 @@
+<link rel="import" href="../polymer/polymer.html" />
+<link rel="import" href="../px-card/px-card.html" />
+<script src="../moment/min/moment.min.js"></script>
+<script src="//d3js.org/d3.v4.min.js"></script>
+
+<dom-module id="energy-efficiency-monitoring-graph"> <template>
+<px-card header-text={{title}}>
+<div class="card-header-link layout layout--right">
+  <div id="graph"></div>
+</div>
+</px-card> </template>
+
+<style>
+.axis--x path {
+	display: none;
+}
+
+.line {
+	fill: none;
+	stroke: steelblue;
+	stroke-width: 1.5px;
+}
+</style>
+
+<script>
+	Polymer({
+		is : 'energy-efficiency-monitoring-graph',
+		properties : {
+			identifyUri : {
+				type : String
+			}
+		},
+		init : function() {
+			//this.hideCard();
+      this.drawGraph();
+		},
+		drawGraph : function() {
+      d3.selectAll('svg').remove();
+      d3.select('#graph').append('svg');
+      var columns = [ "date", "효율", "하한", "상한" ]
+
+      var data = [ {
+        "date" : "20100215",
+        "효율" : "11",
+        "하한" : "10",
+        "상한" : "50"
+      }, {
+        "date" : "20100216",
+        "효율" : "37",
+        "하한" : "10",
+        "상한" : "50"
+      }, {
+        "date" : "20100217",
+        "효율" : "54",
+        "하한" : "10",
+        "상한" : "50"
+      }, {
+        "date" : "20100218",
+        "효율" : "20",
+        "하한" : "10",
+        "상한" : "50"
+      }, {
+        "date" : "20100219",
+        "효율" : "45",
+        "하한" : "10",
+        "상한" : "50"
+      } ];
+      data.columns = columns;
+
+      var zeroline = [ {
+        "id" : "zero"
+      } ];
+      zeroline.values = [ {
+        "date" : "0",
+        "efficiency" : "0"
+      } ];
+
+      var svg = d3.select("svg"), margin = {top : 20,right : 80,bottom : 30,left : 50};
+      var width = 900 - margin.left - margin.right;
+      var height = 800 - margin.top - margin.bottom;
+      svg.attr('width', 900);
+      svg.attr('height',800);
+      var g = svg.append("g").attr("transform","translate(" + margin.left + "," + margin.top + ")");
+
+      var parseTime = d3.timeParse("%Y%m%d");
+
+      for (var i = 0; i < data.length; i++) {
+        data[i].date = parseTime(data[i].date);
+      }
+      var x = d3.scaleTime().range([ 0, width ]), y = d3.scaleLinear().range(
+        [ height, 0 ]), z = d3.scaleOrdinal(d3.schemeCategory10);
+
+        var line = d3.line().curve(d3.curveLinear).x(function(d) {
+          return x(d.date);
+        }).y(function(d) {
+          return y(d.efficiency);
+        });
+        var metrics = data.columns.slice(1).map(function(id) {
+          return {
+            id : id,
+            values : data.map(function(d) {
+              return {
+                date : d.date,
+                efficiency : d[id]
+              };
+            })
+          };
+        });
+        x.domain(d3.extent(data, function(d) {
+          return d.date;
+        }));
+
+        y.domain([ d3.min(metrics, function(c) {
+          return d3.min(zeroline.values, function(d) {
+            return d.efficiency;
+          });
+        }), d3.max(metrics, function(c) {
+          return d3.max(c.values, function(d) {
+            return d.efficiency;
+          });
+        }) ]);
+        //column name
+        z.domain(metrics.map(function(c) {
+          return c.id;
+        }));
+        //Draw x-axies
+        g.append("g").attr("class", "axis axis--x").attr("transform",
+        "translate(0," + height + ")").call(d3.axisBottom(x));
+        //draw y-axies
+        g.append("g").attr("class", "axis axis--y").call(d3.axisLeft(y)).append(
+          "text").attr("transform", "rotate(-90)").attr("y", 6).attr("dy",
+          "0.71em").attr("fill", "#000").text("효율성");
+
+        var metric = g.selectAll(".metric").data(metrics).enter().append("g").attr("class", "metric");
+        metric.append("path").attr("class", "line").attr("d", function(d) {
+          return line(d.values);
+        }).style("stroke", function(d) {
+          return z(d.id);
+        });
+
+        metric.append("text").datum(function(d) {
+          return {
+            id : d.id,
+            value : d.values[d.values.length - 1]
+          };
+        }).attr(
+          "transform",
+          function(d) {
+            return "translate(" + x(d.value.date) + ","
+            + y(d.value.efficiency) + ")";
+          }).attr("x", 3).attr("dy", "0.35em").style("font",
+          "10px sans-serif").text(function(d) {
+            return d.id;
+        });
+    },
+		deckStateChanged : function(newState, oldState) {
+			if(newState.id == 'efficiency_table'){
+        var unitCode = newState.data;
+        //get data using unitCode
+				this.showCard();
+				this.drawGraph();
+			}
+		},
+		behaviors : [ px.card ]
+	});
+
+</script> </dom-module>

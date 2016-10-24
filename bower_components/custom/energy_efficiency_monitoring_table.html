@@ -1,0 +1,53 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+<link rel="import" href="../px-data-table/px-data-table.html"/>
+
+<dom-module id="energy-efficiency-monitoring-table">
+  <template>
+    <px-card>
+      <div>
+        <px-data-table id="efficiency_table" on-tab="">
+          <px-data-table-column name="설비 UNIT TYPE">
+          </px-data-table-column>
+          <px-data-table-column name="설비 UNIT 코드">
+          </px-data-table-column>
+          <px-data-table-column name="설비 UNIT명">
+          </px-data-table-column>
+          <px-data-table-column name="일/주/월">
+          </px-data-table-column>
+          <px-data-table-column name="효율(%)">
+          </px-data-table-column>
+          <px-data-table-column name="전력 사용량(kWh)">
+          </px-data-table-column>
+        </px-data-table>
+      </div>
+    </px-card>
+  </template>
+  <script>
+  Polymer({
+    is:'energy-efficiency-monitoring-table',
+    init:function(){
+      document.getElementById("efficiency_table").addEventListener("px-row-click", function(e) {
+        var clickedRow = e.detail.row;
+        console.log("Row clicked", clickedRow, " _selected: ", clickedRow._selected);
+        //get unit code
+        var unitCode = '';
+        this.updateDeck({
+          id : 'efficiency_table',
+          data : unitCode
+        });
+      });
+    },
+    deckStateChanged: function(newState, oldState){
+      if(newState.id == 'energy-efficiency-monitoring-quiry'){
+        if(newState.data == 'success'){
+          //get data & draw table
+        }else{
+          alert("error");
+        }
+      }
+    },
+    behaviors:[px.card]
+  });
+  </script>
+</dom-module>

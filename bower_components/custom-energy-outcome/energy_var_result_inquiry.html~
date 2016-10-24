@@ -1,0 +1,150 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+<link href="../px-datetime-range-field/px-datetime-range-field.html" rel="import">
+
+<dom-module id="energy-var-register-quiry-card">
+	<template>
+		<px-card header-text={{title}}>
+			<div style="padding-top:5px;"class="card-header-links layout layout--right">
+				<div style="width:100%; text-align:right; padding-bottom:30px;">
+					<button class="btn" id="inquiry" on-click="inquiry">조회</button>
+					<button class="btn" id="insertQuiry" on-click="insert_quiry">등록</button>
+					<button class="btn" id="updateQuiry" on-click="update_quiry">수정</button>
+					<button class="btn" id="deleteQuiry" on-click="delete_quiry">삭제</button>
+					<button class="btn" id="uploadExcel" on-click="upload_excel">Upload</button>
+				</div>
+				<div style = "width:100%;">
+				<div style="float:left; width:25%;">
+					<p class="labelText">사업장</p>
+					<select class="inputBox selectInputBox" id="site"><option value="">선택</option></select>
+				</div>
+				<div style="float:left; width:25%;">
+					<p class="labelText">부문선택</p>
+					<select class="inputBox selectInputBox" id="team" on-change="findSubTeam">
+						<option value="">선택</option>
+						<option value="SUB-TEAM">조직</option>
+						<option value="FACILITY-MASTER">설비</option>
+						<option value="ENERGY-USAGE">에너지이용</option>
+						<option value="FUNCTIONAL-LOCATION">기능위치</option>
+					</select>
+				</div>
+				<div style="float:left; width:25%;">
+					<p class="labelText">부문이름</p>
+					<select class="inputBox selectInputBox" id="sub_team"><option value="">선택</option></select>
+				</div>
+				<div style="float:left; width:25%;">
+					<p class="labelText">변수 명</p>
+					<input class="inputBox"  id="variable_name" type="text">
+				</div>
+			</div>
+			<div style="clear:both; padding-top:30px; width:100%;" class="layout__item u-1/6">
+        <div style="width:15%;">
+          <p class="labelText">날짜</p>
+				</div>
+				<div style="width:85%; float:left;">
+					<px-datetime-picker id="check_start_time" date-format="YYYY/MM/DD" time-format="hh:mmA" hide-time="true" show-time-zone="none" time-zone="Asia/Seoul"></px-datetime-picker>
+             &nbsp; - &nbsp;
+             <px-datetime-picker id="check_end_time" date-format="YYYY/MM/DD" time-format="hh:mmA" hide-time="true" show-time-zone="none" time-zone="Asia/Seoul"></px-datetime-picker>
+				</div>
+				<div style="clear:both;"></div>
+			</div>
+		</px-card>
+	</template>
+</dom-module>
+<script>
+  Polymer({
+    is: 'energy-var-register-quiry-card',
+		ready : function(){
+			var self = this;
+			self.setOptionToSelectTag('/api/list');
+		},
+		setOptionToSelectTag: function(uri){
+			var self = this;
+
+			var site = document.getElementById("site");
+
+
+
+
+			this.setDataToList(uri+"/code/site", site, null);
+
+
+		},
+		findSubTeam: function(list){
+			var uri = "/api/list";
+
+			console.log(list.target.value);
+			var subTeam = document.getElementById("sub_team");
+			subTeam.options.length=0;
+			this.setDataToList(uri+"/terminal/"+list.target.value , subTeam, null);
+		},
+		inquiry:function(){
+			var self = this;
+
+	    var site = document.getElementById("site");
+			var team = document.getElementById("team");
+			var subTeam = document.getElementById("sub_team");
+			var startDate = document.getElementById("check_start_time").dateTime;
+			var endDate = document.getElementById("check_end_time").dateTime;
+
+
+			var date = new Date(startDate); // some mock date
+			startDate = date.toISOString().substring(0, 10);
+
+			date = new Date(endDate); // some mock date
+			endDate = date.toISOString().substring(0, 10);
+
+			console.log(startDate+" - "+endDate);
+			var parameters = [];
+			parameters.push(site.value);
+			parameters.push(team.value);
+			parameters.push(subTeam.value);
+			parameters.push(startDate);
+			parameters.push(endDate);
+
+	    var keys = [
+				"site", "type", "target_code", "start_date", "end_date"
+	    ];
+
+	    data = this.makeParameter(parameters, keys);
+
+			console.log("[MinjuneL] Data "+ JSON.stringify(data));
+			var event = new Object();
+			event.gridCommand = "inquiry";
+			event.parameters = data;
+
+			self.updateDeck(event);
+	 	},
+
+    insert_quiry: function(){
+
+    },
+
+    update_quiry:function(){
+
+    },
+    delete_quiry: function(){
+
+
+    },
+    upload_excel: function(){
+
+    },
+    behaviors: [px.card]
+  });
+</script>
+<style>
+.inputBox{
+	text-align:center;
+	width:121px;
+	margin:auto;
+}
+.selectInputBox{
+	width:125px;
+}
+.labelText{
+	text-align:center;
+	width:100px;
+	margin:auto;
+}
+</style>

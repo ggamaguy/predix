@@ -1,0 +1,8 @@
+<px-deck context="{{context}}">
+  <energy-efficiency-monitoring-quiry title="에너지 효율 모니터링" id="energy-efficiency-monitoring-quiry">
+  </energy-efficiency-monitoring-quiry>
+  <energy-efficiency-monitoring-table title="에너지 효율 모니터링 조회" id="energy-efficiency-monitoring-table">
+  </energy-efficiency-monitoring-table>
+  <energy-efficiency-monitoring-graph title="에너지 효율 모니터링 그래프" id="energy-efficiency-monitoring-graph">
+  </energy-efficiency-monitoring-graph>
+</px-deck>

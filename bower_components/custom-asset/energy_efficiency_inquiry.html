@@ -1,0 +1,51 @@
+<link rel="import" href="../polymer/polymer.html" />
+<link rel="import" href="../px-card/px-card.html" />
+
+<dom-module id="my-energy-efficiency-inquiry-card">
+  <template>
+    <px-card header-text={{title}}>
+      <div class="layout__item u-1/6">
+        	<div class=btn-group  style="text-align:right; width:100%; padding-bottom:30px">
+			<span>
+				<button class="btn" id="inquiry" on-click="InquiryData">조회</button>
+				<button class="btn" id="create_new" on-click="new_unitEnergyEfficiency">신규</button>
+				<button class="btn" id="newCode" on-click="add_newData">저장</button>				
+				<button class="btn" id="disable" on-click="deleteData">삭제</button>
+			</span>
+		   </div>
+		       &nbsp;&nbsp;사업장&nbsp;&nbsp;<select id="site"><option value="default">전체</option></select></select>&nbsp;&nbsp;
+				  설비 Unit Type&nbsp;&nbsp;<select id="facility_unit_type"><option value="default">전체</option></select>
+
+		</div>
+    </px-card>
+  </template>
+</dom-module>
+<script>
+  Polymer({
+    is: 'my-energy-efficiency-inquiry-card',
+	
+		 ready: function() {	
+		  var self = this;
+				this.getMasterData('/api/list');
+		  },
+			
+		 getMasterData: function(uri){
+					var self = this;
+					
+					var select_site = document.getElementById("site");
+					var select_facility_unit_type = document.getElementById("facility_unit_type");
+					
+					this.setDataToList(uri+"/code/site",select_site, null);
+					this.setDataToList(uri+"/facility-unit-type",select_facility_unit_type, null);
+					
+			},	
+		 new_unitEnergyEfficiency: function(){
+		 //Polymer.dom(document).querySelector("my-energy-consume-team-energy-resource-grid-card").hideCard();
+		 Polymer.dom(document).querySelector("my-energy-efficiency-add-card").showCard();	    		
+   },
+   	  
+		      		
+    		
+    behaviors: [px.card]
+  });
+</script>

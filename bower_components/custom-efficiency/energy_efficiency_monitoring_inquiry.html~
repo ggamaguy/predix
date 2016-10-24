@@ -1,0 +1,223 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+<link rel="import" href="../px-calendar-picker/px-calendar-picker.html"/>
+<link rel="import" href="../px-datetime-picker/px-datetime-picker.html"/>
+<dom-module id="energy-efficiency-monitoring-quiry">
+  <template>
+    <px-card header-text={{title}}>
+     <div class="card-header-link layout layout--right">
+      <div class="btn-group" style="text-align:right; width:100%; padding-bottom:30px">
+              <span>
+                 <button class="btn" id="inquiry" on-click="inquiryData">조회</button>
+              </span>
+      </div>
+      <div style="display:inline-block;padding-top:30px;">
+        <p class="labelQuiryMenu">사업부</p>
+        <select id="site"><option value="default">전체</option></select>
+        <p class="labelQuiryMenu" style="margin-left:30px;">조직</p>
+        <select id="sub_team"><option value="default">전체</option></select>
+        <p class="labelQuiryMenu">설비 UNIT TYPE</p>
+        <select id="facility_unit_type"><option value="default">전체</option></select>
+        <p class="labelQuiryMenu">주기</p>
+        <select id="period">
+			<option value="DAY">일</option>
+        	<option value="WEEK">주</option>
+        	<option value="MONTH">월</option>
+        	<option value="YEAR">년</option>        
+        </select></select>
+      </div>
+      <div style="display:inline-block;">
+        <p class="labelQuiryMenu">설비코드</p>
+        <input class="monitoring-input"type=text id="asset-code">
+         <px-modal modal-heading="설비 마스터" id="modal-facility-master">
+            <button class="btn btn--primary btn--icon modal-trigger" on-click="searchFacility">
+              <i class="fa fa-search"></i>검색
+            </button>
+            <button class="btn btn--primary" on-click="modalSearch">조회</button>
+            <button class="btn btn--primary" on-click="modalClose">닫기</button>
+            <br></br>
+          				설비코드 &nbsp;<input type="text" id="modal_facility_code" />&nbsp; &nbsp;
+            			설비명 &nbsp;<input type="text" id="modal_facility_name" />
+            		<br></br>
+            			하위설비그룹 &nbsp;<select id="modal_sub_facility_group"><option value="default">전체</option></select>&nbsp; &nbsp;
+            			하위조직 &nbsp;<select id="modal_sub_team"><option value="default">전체</option></select>&nbsp; &nbsp;
+            			공정 &nbsp;<select id="modal_sub_process"><option value="default">전체</option></select>
+            		<br></br>
+            <px-data-table id="modalDetailEnergyEfficiencyGrid" striped table-rows></px-data-table>
+          </px-modal>
+        <p class="labelQuiryMenu">설비명</p>
+        <input class="monitoring-input" type="text" id="asset-name">
+        <p class="labelQuiryMenu">조회기간</p>
+        <px-datetime-picker style="margin:auto;" date-time="2016-09-02T00:00:00.000Z" date-format="YYYY/MM/DD" time-format="hh:mmA" hide-time="true" show-time-zone="none" time-zone="Asia/Seoul"></px-datetime-picker>
+        <p style="display:inline-block;"> - </p>
+        <px-datetime-picker date-time="2016-09-02T00:00:00.000Z" date-format="YYYY/MM/DD" time-format="hh:mmA" hide-time="true" show-time-zone="none" time-zone="Asia/Seoul"></px-datetime-picker>
+      </div>
+     </div>
+    </px-card>
+  </template>
+  <script>
+  Polymer({
+    is:"energy-efficiency-monitoring-quiry",
+    ready: function(){
+     var self = this;
+         self.getEnergyvarData('/api/list');
+  },
+     
+  getEnergyvarData: function(uri) {
+     
+			var self = this;
+					
+				var select_site = document.getElementById("site");
+				var select_sub_team = document.getElementById("sub_team");
+				var select_facility_unit_type = document.getElementById("facility_unit_type");
+				
+				
+				this.setDataToList(uri+"/code/site",select_site, null);
+				this.setDataToList(uri+"/code/sub-team", select_sub_team, null);
+				this.setDataToList(uri+"/facility-unit-type", select_facility_unit_type, null);
+
+					
+	 	
+  },
+  initModal: function(uri) {
+    var self = this;
+    
+       		var select_modal_sub_team = document.getElementById("modal_sub_team");
+				var select_modal_sub_facility = document.getElementById("modal_sub_facility_group");
+				var select_modal_sub_process = document.getElementById("modal_sub_process");
+
+
+				this.setDataToList(uri+"/sub-team",select_modal_sub_team, null);
+				this.setDataToList(uri+"/sub-facility-group",select_modal_sub_facility, null);
+				this.setDataToList(uri+"/sub-process",select_modal_sub_process, null);
+				
+
+  	},
+  modalSearch: function() {
+  	var self = this;
+
+		var select_modal_sub_team = document.getElementById("modal_sub_team");
+		var select_modal_sub_facility = document.getElementById("modal_sub_facility_group");
+		var select_modal_sub_process = document.getElementById("modal_sub_process");
+
+		var modal_facility_code = document.getElementById("modal_facility_code");
+		var modal_facility_name = document.getElementById("modal_facility_name");
+
+		
+		var parameters = [];
+		parameters.push(select_modal_sub_team.value);
+		parameters.push(select_modal_sub_facility.value);
+		parameters.push(select_modal_sub_process.value);
+		parameters.push(modal_facility_code.value);
+		parameters.push(modal_facility_name.value);
+
+
+
+		var keys = [
+	
+			"sub-team",
+			"sub-process",
+			"sub-facility-group",
+         "code",
+         "name"
+		];
+
+		data = this.makeParameter(parameters, keys);
+
+		self.getModalDetailEnergyEfficiencyGrid('/asset-list/facility-master/plain', JSON.stringify(data));
+
+  	},
+  getModalDetailEnergyEfficiencyGrid: function(uri, parameter) {
+    var self = this;
+   		px.dealer.httpRequest({
+    			url: '/api/datagrid' + uri,
+    			method: 'POST',
+    			data:parameter
+   		 }).then(function(data){
+        // on fulfillment
+        //console.log("Grid data: " , data);
+  				self.allData = data.tableData;
+  				var uiColumn = data.columns;
+  				var uiData = [];
+
+  			//console.log("column", data.columns[0].label);
+
+  		  		data.tableData.forEach(function(row){
+  			     var uiRow = {};
+
+  			     data.columns.forEach(function(col){
+  			        uiRow[col.label] = row[col.field]; //key:value
+  			     });
+
+  			     uiData.push(uiRow);
+        });
+        self.$.modalDetailEnergyEfficiencyGrid.tableData = uiData;
+    	});
+
+    },
+   searchFacility: function() {
+     var self = this;
+     self.initModal('/api/list/code');
+    
+    	self.$.modalDetailEnergyEfficiencyGrid.addEventListener("px-cell-click", function(e){
+			var clickedRow = e.detail.row;
+			var clickedAssetname = e.detail.row.row.설비명.value;
+			var clickedAssetcode = e.detail.row.row.설비코드.value;
+				clickedColumn = e.detail.column;
+			console.log("Cell Clicked, Row=", clickedAssetname);
+			console.log("Cell Clicked, Row=", clickedAssetcode);   	
+			self.getmodalData(clickedAssetcode, clickedAssetname);
+   	   self.modalClose();
+   	});
+   
+
+   	
+  	},
+   getmodalData : function(code, name){
+     var self = this;
+     console.log("getvalue", code, name);
+     
+    document.getElementById("asset-code").value = code;
+    document.getElementById("asset-name").value = name;
+    
+   },
+ 
+  	modalClose: function() {
+    var modal = document.getElementById("modal-facility-master");
+    modal.modalButtonClicked();
+  	},
+   deckStateChanged: function(newDeckState, oldDeckState){
+
+      if(newDeckState.id == 'inquiry'){        
+        if(this.$$('#unitType').value == ''){
+          alert("Unit Type을 입력해 주세요");
+        }else{
+          //getdata
+          this.updateDeck({
+            id:"energy-efficiency-monitoring-quiry",
+            data:"success"
+          })
+        }
+      }
+    },
+    behaviors:[px.card]
+  });
+  </script>
+  <style>
+    .labelQuiryMenu{
+        display:inline-block;
+        width:100px;
+        text-align: right;
+        margin:auto;
+        padding-right: 10px;
+    }
+    .monitoring-input{
+        width:150px;
+        margin:auto;
+
+    }
+    .monitoring-select{
+      width:auto;
+    }
+  </style>
+</dom-module>

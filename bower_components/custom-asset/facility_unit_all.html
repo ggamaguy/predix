@@ -1,0 +1,117 @@
+<link rel="import" href="../polymer/polymer.html" />
+<link rel="import" href="../px-card/px-card.html" />
+<link rel="import" href="../px-data-table/px-data-table.html"/>
+
+<script src="../moment/min/moment.min.js"></script>
+
+<dom-module id="my-facility-unit-all-card">
+  <template>
+    <px-card header-text={{title}}>
+    		<div class="layout">
+					<div style="width:60%;float:left;">
+						<br>
+        	<px-data-table id="facilityUnitGrid" striped table-rows selectable></px-data-table>
+					</div>
+					<div style="width:30%;float:right;">
+					 <div>물리량 목록</div>
+        	<px-data-table id="physicsUnitGrid" striped table-rows></px-data-table>
+
+      </div>
+    </px-card>
+  </template>
+</dom-module>
+
+<script>
+  Polymer({
+    is: 'my-facility-unit-all-card',
+  properties: {
+    identifyUri: {
+      type: String
+    },
+    gridData: {
+      type: Array,
+      notify: true
+    }
+  },
+  init: function() {
+    var self = this;
+    this.getFacilityUnitGridData('/asset-list/facility-unit-type/full', "[]");
+		//this.getPhysicsGridData('/asset-list/physics/full');
+  },
+
+  getFacilityUnitGridData: function(uri, parameter) {
+    var self = this;
+    px.dealer.httpRequest({
+    url: '/api/datagrid' + uri,
+    method: 'POST',
+    data:parameter
+    }).then(function(data){
+        // on fulfillment
+        //console.log("Grid data: " , data);
+  			self.allData = data.tableData;
+  			var uiColumn = data.columns;
+  			var uiData = [];
+
+  			//console.log("column", data.columns[0].label);
+
+  		  data.tableData.forEach(function(row){
+  			     var uiRow = {};
+
+  			     data.columns.forEach(function(col){
+  			        uiRow[col.label] = row[col.field]; //key:value
+  			     });
+
+  			     uiData.push(uiRow);
+        });
+        self.$.facilityUnitGrid.tableData = uiData;
+    });
+    //add row onclick listener
+    self.$.facilityUnitGrid.addEventListener("px-cell-click", function(e){
+      var clickedRow = e.detail.row;
+      console.log(JSON.stringify(clickedRow));
+      console.log(clickedRow.row.유닛타입코드.value);
+
+      self.getPhysicsGridData(clickedRow.row.유닛타입코드.value);
+    });
+  },
+
+
+  getPhysicsGridData: function(uri) {
+    var self = this;
+    px.dealer.httpRequest({
+      //facility-unit-type-phy/MOT/full
+    url: '/api/datagrid' +"/facility-unit-type-phy/"+uri+"/full",
+    method: 'GET'
+    }).then(function(data){
+        // on fulfillment
+        //console.log("Grid data: " , data);
+  			self.allData = data.tableData;
+  			var uiColumn = data.columns;
+  			var uiData = [];
+
+  			//console.log("column", data.columns[0].label);
+
+  		  data.tableData.forEach(function(row){
+  			     var uiRow = {};
+
+  			     data.columns.forEach(function(col){
+  			        uiRow[col.label] = row[col.field]; //key:value
+  			     });
+
+  			     uiData.push(uiRow);
+        });
+        self.$.physicsUnitGrid.tableData = uiData;
+    });
+  },
+
+  deckStateChanged: function(newState, oldState) {
+    var self = this;
+    self.identifyUri = newState.gridCommand;
+    if(self.identifyUri == "inquiry") {
+      var parameter = JSON.stringify(newState.parameters);
+      self.getFacilityUnitGridData('/asset-list/facility-unit-type/full', parameter);
+    }
+  },
+  behaviors: [px.card]
+});
+</script>

@@ -1,0 +1,75 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+<link rel="import" href="../px-data-table/px-data-table.html"/>
+
+<script src="../moment/min/moment.min.js"></script>
+
+<dom-module id="my-energy-consume-grid-card">
+  <template>
+    <px-card header-text={{title}}>
+      <div class="card-header-link layout layout--right">
+        <px-data-table id="energyConsumeGrid" striped table-rows></px-data-table>
+      </div>
+    </px-card>
+  </template>
+</dom-module>
+
+<script>
+Polymer({
+  is: 'my-energy-consume-grid-card',
+  properties: {
+    identifyUri: {
+      type: String
+    },
+    gridData: {
+      type: Array,
+      notify: true
+    }
+  },
+  init: function() {
+
+  },
+  ready: function() {
+    // this.getGridData('/energy-consume-team-energy-resource');
+    this.getGridData('/facility-master');                                       // for test.
+  },
+  getGridData: function(uri) {
+    var self = this;
+    self.getData('/api/datagrid' + uri).then(function(data) {
+      self.allData = data.tableData;
+      var uiColumn = data.columns;
+      var uiData = [];
+
+      data.tableData.forEach(function(row) {
+        var uiRow = {};
+        data.columns.forEach(function(col) {
+          uiRow[col.label] = row[col.field];
+        });
+        uiData.push(uiRow);
+      });
+      self.$.energyConsumeGrid.tableData = uiData;
+    });
+  },
+  deckStateChanged: function(newState, oldState) {
+    var self = this;
+    self.identifyUri = newState.command;
+    if(self.identifyUri == "inquiry-team-energy-resource") {
+    self.$.energyConsumeGrid.$.dataTable.meta = [];     // clear data table's header to reset header
+    self.$.energyConsumeGrid.$.dataTable.data = [];     // clear data table's all data to reset data
+    self.$.energyConsumeGrid.rmColumns();
+      // this.getGridData('/energy-consume-team-energy-resource');
+      this.getGridData('/facility-master')                                      // for test
+    } else if(self.identifyUri == "inquiry-facility-energy-resource") {
+    self.$.energyConsumeGrid.$.dataTable.meta = [];     // clear data table's header to reset header
+    self.$.energyConsumeGrid.$.dataTable.data = [];     // clear data table's all data to reset data
+    self.$.energyConsumeGrid.rmColumns();
+      // this.getGridData('/energy-consume-facility-energy-resource');
+      this.getGridData('/meter')                                                // for test
+    } else if(self.identifyUri == "inquiry-energy-resource") {
+    } else if(self.identifyUri == "inquiry-team") {
+    } else if(self.identifyUri == "inquiry-facility") {
+    }
+  },
+  behaviors: [px.card]
+});
+</script>

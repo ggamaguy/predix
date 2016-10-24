@@ -1,0 +1,51 @@
+<link rel="import" href="../polymer/polymer.html" />
+<link rel="import" href="../px-card/px-card.html" />
+<link rel="import" href="../px-data-table/px-data-table.html"/>
+
+<dom-module id="my-energy-efficiency-grid-card">
+  <template>
+  		
+    <px-card header-text={{title}}>
+  			<!--  
+     <px-data-table striped table-data="{{data}}">
+      <px-data-table-column id="pysics" name="설비 Unit Type" ...></px-data-table-column>
+      <px-data-table-column name="효율화 기준항목 명" ...></px-data-table-column>
+      <px-data-table-column name="정렬기준" ></px-data-table-column>
+      <px-data-table-column name="이상 기준값" ...></px-data-table-column>
+      <px-data-table-column name="이하 기준값" ...></px-data-table-column>
+      <px-data-table-column name="Best Practice" ...></px-data-table-column>
+      <px-data-table-column name="물리량코드(식)" ...></px-data-table-column>
+    	</px-data-table> -->
+    	<px-data-table id="energyEfficiencyGrid" striped table-rows></px-data-table>
+    </px-card>
+  </template>
+</dom-module>
+<script>
+  Polymer({
+    is: 'my-energy-efficiency-grid-card',
+    
+			init: function() {
+    		var self = this;
+    		this.getEnergyEfficiencyGridData('/facility-unit-master');
+  			},
+  
+  		getEnergyEfficiencyGridData: function(uri) {
+    		var self = this;
+    		self.getData('/api/datagrid' + uri).then(function(data) {
+      self.allData = data.tableData;
+      var uiColumn = data.columns;
+      var uiData = [];
+
+      data.tableData.forEach(function(row) {
+        data.columns.forEach(function(col) {
+          uiRow[col.label] = row[col.field];
+        });
+        uiData.push(uiRow);
+      });
+      self.$.energyEfficiencyGrid.tableData = uiData;
+    });
+  },    		
+    		
+    behaviors: [px.card]
+  });
+</script>

@@ -1,0 +1,60 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+<link rel="import" href="../px-data-table/px-data-table.html"/>
+
+<script src="../moment/min/moment.min.js"></script>
+
+<dom-module id="my-energy-consume-facility-energy-resource-grid-card">
+  <template>
+    <px-card header-text={{title}}>
+      <div class="card-header-link layout layout--right">
+        <px-data-table id="energyConsumeFacilityEnergyResourceGrid" striped table-rows></px-data-table>
+      </div>
+    </px-card>
+  </template>
+</dom-module>
+
+<script>
+Polymer({
+  is: 'my-energy-consume-facility-energy-resource-grid-card',
+  properties: {
+    identifyUri: {
+      type: String
+    },
+    gridData: {
+      type: Array,
+      notify: true
+    }
+  },
+  init: function() {
+    this.hideCard();
+  },
+  ready: function() {
+    this.getGridData('/energy-consume-facility-energy-resource');
+  },
+  getGridData: function(uri) {
+    var self = this;
+    self.getData('/api/datagrid' + uri).then(function(data) {
+      self.allData = data.tableData;
+      var uiColumn = data.columns;
+      var uiData = [];
+
+      data.tableData.forEach(function(row) {
+        data.columns.forEach(function(col) {
+          uiRow[col.label] = row[col.field];
+        });
+        uiData.push(uiRow);
+      });
+      self.$.energyConsumeFacilityEnergyResourceGrid.tableData = uiData;
+    });
+  },
+  deckStateChanged: function(newState, oldState) {
+    var self = this;
+    self.identifyUri = newState.command;
+    if(self.identifyUri == "inquiry") {
+      // draw a table in here.
+    }
+  },
+  behaviors: [px.card]
+});
+</script>

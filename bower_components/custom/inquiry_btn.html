@@ -1,0 +1,56 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+
+<script src="../moment/min/moment.min.js"></script>
+
+
+
+<dom-module id="inquiry-btn-card">
+<template>
+<!--<px-card header-text="BASIS INFORMATION">-->
+<px-card header-text={{title}}>
+<div class="card-header-links layout layout--right">
+	<div class="layout__item u-1/6">
+	<br>
+		<div class=btn-group>
+			<span style="float:right">
+				<button class="btn" id="inquiry" on-tap="inquiry_data">조회</button>
+			</span>
+		</div>
+    </div>
+</div>
+</px-card>
+</template>
+</dom-module>
+
+<script>
+Polymer({
+	is: 'inquiry-btn-card',
+	properties: {
+		assetUri: {
+			type: String
+		},
+		identifyUri: {
+			type: String
+		}
+	},
+
+    // initialization
+		init: function() {
+
+    },
+		inquiry_data:function(event){
+			this.updateDeck({
+				id: event.target.id,
+				data:'clicked'
+			});
+		},
+
+		deckStateChanged: function(newState, oldState) {
+
+    },
+
+
+	behaviors: [px.card]
+});
+</script>

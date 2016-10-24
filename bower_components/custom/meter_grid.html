@@ -1,0 +1,82 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+<link rel="import" href="../px-data-table/px-data-table.html"/>
+<link rel="import" href="../px-data-table/px-example-highlight.html"/>
+
+<script src="../moment/min/moment.min.js"></script>
+
+<dom-module id="my-meter-grid-card">
+<template>
+<px-card header-text={{title}}>
+<div class="card-header-links layout layout--right">
+    <px-data-table id="meterGrid" striped selectable>
+	
+    </px-data-table>
+</px-card>
+</template>
+</dom-module>
+
+<script>
+Polymer({
+	is: 'my-meter-grid-card',
+	properties: {
+		gridData: {
+			type: Array,
+			notify: true
+		}
+    },
+    
+	init: function() {
+		var self = this;
+		//this.hideCard();
+		this.$.meterGrid.addEventListener("px-cell-click", function(e){
+			var clickedRow = e.detail.row,
+				clickedColumn = e.detail.column;
+			console.log("Cell Clicked, Row=", clickedRow);
+		
+		});
+		this.getGridData('/asset-list/meter/full');
+	},
+
+    detached: function() {
+    },
+    
+
+	getGridData: function(uri) {
+		var self = this;
+
+		this.getData('/api/datagrid' + uri).then(function(data) {
+		//console.log("Grid data: " , data);
+			self.allData = data.tableData;
+			var uiColumn = data.columns;
+			var uiData = [];
+	
+			//console.log("column", data.columns[0].label);
+		
+		//	for(var i=0, count=1; i<data.tableData.length; i++, count++) {
+		data.tableData.forEach(function(row){
+			var uiRow = {};
+			
+			data.columns.forEach(function(col){
+			  uiRow[col.label] = row[col.field]; //key:value
+			});
+			
+			uiData.push(uiRow);
+			
+		});
+			 self.$.meterGrid.tableData = uiData;
+			//console.log("uiData", uiData);
+		});
+    },
+	
+	// context is set for px-dashboard, which updates px-deck, which updates this px-card
+	contextChanged: function(newContext) {
+		// console.log('contextChanged: ' + JSON.stringify(newContext));
+	},
+    
+	deckStateChanged: function(newState, oldState) {
+    },
+	
+    behaviors: [px.card]
+});
+</script>

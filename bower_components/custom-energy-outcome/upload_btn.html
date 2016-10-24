@@ -1,0 +1,70 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+
+<script src="../moment/min/moment.min.js"></script>
+
+<dom-module id="my-upload-btn-card">
+<template>
+<!--<px-card header-text="BASIS INFORMATION">-->
+<px-card header-text={{title}}>
+<div class="card-header-links layout layout--right">
+	<div class="layout__item u-1/6">
+	<br>
+		<div class=btn-group>
+			<span style="float:right">
+				<button class="btn" id="inquiry" on-click="inquiry">조회</button>
+				<button class="btn" id="insertQuiry" on-click="insert_quiry">등록</button>
+        <button class="btn" id="updateQuiry" on-click="update_quiry">수정</button>
+				<button class="btn" id="deleteQuiry" on-click="delete_quiry">삭제</button>
+        <button class="btn" id="uploadExcel" on-click="upload_excel">Upload</button>
+			</span>
+		</div>
+    </div>
+</div>
+</px-card>
+</template>
+</dom-module>
+
+<script>
+Polymer({
+	is: 'my-upload-btn-card',
+	properties: {
+		assetUri: {
+			type: String
+		},
+		identifyUri: {
+			type: String
+		}
+	},
+
+    // initialization
+	 init: function() {
+
+   },
+
+   inquiry:function(){
+
+   },
+
+   insert_quiry: function(){
+
+   },
+
+   update_quiry:function(){
+
+   },
+   delete_quiry: function(){
+
+
+   },
+   upload_excel: function(){
+
+   },
+	deckStateChanged: function(newState, oldState) {
+		var self = this;
+	   self.identifyUri = newState.clickedInfo;
+	   console.log("identify", self.identifyUri);
+    },
+	behaviors: [px.card]
+});
+</script>

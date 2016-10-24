@@ -1,0 +1,242 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+<link rel="import" href="../px-modal/px-modal.html"/>
+<link rel="import" href="../px-theme/px-theme.html"/>
+
+<script src="../moment/min/moment.min.js"></script>
+
+<dom-module id="my-energy-consume-inquiry-card">
+  <template>
+    <px-card header-text={{title}}>
+      <div class="card-header-link layout layout--right">
+        <div class="layout__item u-1/6">
+          <div class=btn-group style="text-align:right;width:100%; padding-bottom:30px">
+           	<span>
+                <button class="btn" id="inquiry" on-click="inquiryData">조회</button>
+           	</span>
+          </div>
+          사업장 &nbsp;<select id="site"><option value="">전체</option></select>&nbsp; &nbsp;
+          하위조직 &nbsp;<select id="sub_team"><option value="">전체</option></select>&nbsp; &nbsp;
+          상위설비그룹 &nbsp;<select id="facility_group"><option value="">전체</option></select>&nbsp; &nbsp;
+          하위설비그룹 &nbsp;<select id="sub_facility_group"><option value="">전체</option></select>&nbsp; &nbsp;
+          <br></br>
+          공정 &nbsp;<select id="sub_process"><option value="">전체</option></select>&nbsp; &nbsp;
+          에너지원 &nbsp;<select id="energy_source"><option value="">전체</option></select>&nbsp; &nbsp;
+          설비코드 &nbsp;<input type="text" id="facility_code" />
+          <px-modal modal-heading="설비 마스터" id="modal-facility-master">
+            <button class="btn btn--primary btn--icon modal-trigger" on-click="searchFacility">
+              <i class="fa fa-search"></i>검색
+            </button>
+            <button class="btn btn--primary" on-click="modalSearch">조회</button>
+            <button class="btn btn--primary" on-click="modalClose">닫기</button>
+            <br></br>
+            설비코드 &nbsp;<input type="text" id="modal_facility_code" />
+            설비명 &nbsp;<input type="text" id="modal_facility_name" />
+            <br></br>
+            하위설비그룹 &nbsp;<select id="modal_sub_facility_group"><option value="">전체</option></select>&nbsp; &nbsp;
+            하위조직 &nbsp;<select id="modal_sub_team"><option value="">전체</option></select>&nbsp; &nbsp;
+            하위공정 &nbsp;<select id="modal_sub_process"><option value="">전체</option></select>
+            <br></br>
+            <px-data-table id="modalEnergyConsumeGrid" striped table-rows></px-data-table>
+          </px-modal>&nbsp;&nbsp;
+          설비명 &nbsp;<input type="text" id="facility_name" />&nbsp; &nbsp;
+          <br></br>
+          주기 &nbsp;<select id="cycle"></select>&nbsp; &nbsp;
+          조회기간 &nbsp;<px-datetime-picker id="check_start_time" date-format="YYYY/MM/DD" time-format="hh:mmA" hide-time="true" show-time-zone="none" time-zone="Asia/Seoul"></px-datetime-picker>
+             &nbsp; - &nbsp;
+             <px-datetime-picker id="check_end_time" date-format="YYYY/MM/DD" time-format="hh:mmA" hide-time="true" show-time-zone="none" time-zone="Asia/Seoul"></px-datetime-picker>
+          &nbsp; &nbsp; &nbsp; &nbsp;
+          조회구분 &nbsp;<select id="check_classification" on-change="checkclassification"></select>&nbsp; &nbsp;
+        </div>
+      </div>
+    </px-card>
+  </template>
+</dom-module>
+
+<script>
+Polymer({
+  is: 'my-energy-consume-inquiry-card',
+  properties: {
+    identifyUri: {
+      type: String
+    },
+    arr_sub_team: {
+      type: Array,
+      notify: true
+    },
+    arr_facility_group: {
+      type: Array,
+      notify: true
+    },
+    arr_facility_sub_group: {
+      type: Array,
+      notify: true
+    },
+    arr_sub_process: {
+      type:Array,
+      notify: true
+    }
+  },
+  init: function() {
+
+  },
+  ready: function() {
+    var self = this;
+    self.getEnergyConsumeData('/api/list/code');
+  },
+  inquiryData: function() {
+    var self = this;
+    self.updateDeck({'command': 'inquiry'});
+  },
+  getEnergyConsumeData: function(uri) {
+    var self = this;
+      	   var select_site = document.getElementById("site");
+				var select_sub_team = document.getElementById("sub_team");
+				var select_energy_source = document.getElementById("energy_source");
+				var select_facility_group = document.getElementById("facility_group");
+				var select_sub_facility_group = document.getElementById("sub_facility_group");
+				var select_sub_process = document.getElementById("sub_process");
+				var select_check_classification = document.getElementById("check_classification");
+				
+				this.setDataToList(uri+"/site",select_site, null);
+				this.setDataToList(uri+"/sub-team",select_sub_team, null);
+				this.setDataToList(uri+"/energy-source",select_energy_source, null);
+				this.setDataToList(uri+"/facility-group",select_facility_group, null);
+				this.setDataToList(uri+"/sub-facility-group",select_sub_facility_group, null);
+				this.setDataToList(uri+"/sub-process",select_sub_process, null);
+      // for(index in arr_check_classification) {
+      //   select_check_classification.options[select_check_classification.options.length] = new Option(arr_check_classification[index], index);
+      // }
+      select_check_classification.options[0] = new Option("조직별/에너지원별", 0);
+      select_check_classification.options[1] = new Option("설비별/에너지원별", 1);
+      select_check_classification.options[2] = new Option("에너지원별", 2);
+      select_check_classification.options[3] = new Option("조직별", 3);
+      select_check_classification.options[4] = new Option("설비별", 4);
+  },
+   initModal: function(uri) {
+    var self = this;
+    
+       		var select_modal_sub_team = document.getElementById("modal_sub_team");
+				var select_modal_sub_facility = document.getElementById("modal_sub_facility_group");
+				var select_modal_sub_process = document.getElementById("modal_sub_process");
+
+
+				this.setDataToList(uri+"/sub-team",select_modal_sub_team, null);
+				this.setDataToList(uri+"/sub-facility-group",select_modal_sub_facility, null);
+				this.setDataToList(uri+"/sub-process",select_modal_sub_process, null);
+				
+
+  	},
+  	modalSearch: function() {
+  	var self = this;
+
+		var select_modal_sub_team = document.getElementById("modal_sub_team");
+		var select_modal_sub_facility = document.getElementById("modal_sub_facility_group");
+		var select_modal_sub_process = document.getElementById("modal_sub_process");
+
+		var modal_facility_code = document.getElementById("modal_facility_code");
+		var modal_facility_name = document.getElementById("modal_facility_name");
+
+		
+		var parameters = [];
+		parameters.push(select_modal_sub_team.value);
+		parameters.push(select_modal_sub_facility.value);
+		parameters.push(select_modal_sub_process.value);
+		parameters.push(modal_facility_code.value);
+		parameters.push(modal_facility_name.value);
+
+
+
+		var keys = [
+	
+			"sub-team",
+			"sub-process",
+			"sub-facility-group",
+         "code",
+         "name"
+		];
+
+		data = this.makeParameter(parameters, keys);
+
+		self.getModalDetailEnergyEfficiencyGrid('/asset-list/facility-master/plain', JSON.stringify(data));
+  	},
+   getModalDetailEnergyEfficiencyGrid: function(uri, parameter) {
+    var self = this;
+   		px.dealer.httpRequest({
+    			url: '/api/datagrid' + uri,
+    			method: 'POST',
+    			data:parameter
+   		 }).then(function(data){
+        // on fulfillment
+        //console.log("Grid data: " , data);
+  				self.allData = data.tableData;
+  				var uiColumn = data.columns;
+  				var uiData = [];
+
+  			//console.log("column", data.columns[0].label);
+
+  		  		data.tableData.forEach(function(row){
+  			     var uiRow = {};
+
+  			     data.columns.forEach(function(col){
+  			        uiRow[col.label] = row[col.field]; //key:value
+  			     });
+
+  			     uiData.push(uiRow);
+        });
+        self.$.modalEnergyConsumeGrid.tableData = uiData;
+    	});
+
+    },
+  	 searchFacility: function() {
+     var self = this;
+     self.initModal('/api/list/code');
+    
+    	self.$.modalEnergyConsumeGrid.addEventListener("px-cell-click", function(e){
+			var clickedRow = e.detail.row;
+			var clickedAssetname = e.detail.row.row.설비명.value;
+			var clickedAssetcode = e.detail.row.row.설비코드.value;
+				clickedColumn = e.detail.column;
+			console.log("Cell Clicked, Row=", clickedAssetname);
+			console.log("Cell Clicked, Row=", clickedAssetcode);   	
+			self.getmodalData(clickedAssetcode, clickedAssetname);
+   	   self.modalClose();
+   	});
+   
+
+   	
+  	},
+   getmodalData : function(code, name){
+     var self = this;
+     console.log("getvalue", code, name);
+     
+    document.getElementById("facility_code").value = code;
+    document.getElementById("facility_name").value = name;
+    
+   },
+  	modalClose: function() {
+    var modal = document.getElementById("modal-facility-master");
+    modal.modalButtonClicked();
+  	},
+  checkclassification: function() {
+    var select_check_classification = document.getElementById("check_classification");
+    var value = select_check_classification.options[select_check_classification.value].text;
+    Polymer.dom(document).querySelector("my-energy-consume-grid-card").title = value;
+    if(value == "조직별/에너지원별") {
+      this.updateDeck({'command': 'inquiry-team-energy-resource'});
+    } else if(value == "설비별/에너지원별") {
+      this.updateDeck({'command': 'inquiry-facility-energy-resource'});
+    } else if(value == "에너지원별") {
+      this.updateDeck({'command': 'inquiry-energy-resource'});
+    } else if(value == "조직별") {
+      this.updateDeck({'command': 'inquiry-team'});
+    } else if(value == "설비별") {
+      this.updateDeck({'command': 'inquiry-facility'});
+    }
+  },
+  deckStateChanged: function(newState, oldState) {
+
+  },
+  behaviors: [px.card]
+});
+</script>

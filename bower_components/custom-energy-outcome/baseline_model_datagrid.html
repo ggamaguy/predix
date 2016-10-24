@@ -1,0 +1,137 @@
+<link rel="import" href="../polymer/polymer.html" />
+<link rel="import" href="../px-card/px-card.html" />
+<link rel="import" href="../px-data-table/px-data-table.html"/>
+
+
+<dom-module id="my-energy-variable-select-grid-card">
+  <template>
+    <px-card header-text={{title}}>
+    			<form name="environmentVariableForm">
+      <div class="layout" style="float:left;">
+  	    	<table id="environmentVariableGrid" border="1" cellspacing="0">
+						 <tr> 	    		
+  	    				<th rowspan="2">변수<br>선택</th>
+  	    				<th colspan="4">환경변수</th>
+							</tr>						
+							<tr>
+								<td>외기온도</td>
+								<td>CDD</td>
+								<td>HDD</td>
+								<td>상대습도</td>
+						 </tr>						
+						 <tr>
+  	   				<td><input type="checkbox" name="chk_all" on-click="checkAllEnvironment"></td>
+								<td><input type="checkbox" name="chk"></td>
+								<td><input type="checkbox" name="chk"></td>
+								<td><input type="checkbox" name="chk"></td>
+								<td><input type="checkbox" name="chk"></td>
+						 </tr>					
+					</table>
+      </div>
+      </form>
+      <br><br><br><br><br>
+      <div class="layout">
+      	<div class="layout" style="float:left;">
+      		<form name="produceVariableForm">
+							<table id="produceVariableGrid" border="1" cellspacing="0">
+								<tr>
+									<th rowspan="2">변수<br>선택</th>
+									<th colspan="&{numCheckBoxProduce};">생산변수</th>							
+								</tr>
+								<tr>
+								</tr>
+								<tr>
+  	   					<td><input type="checkbox" name="chkProduce_all" on-click="checkAllProduce"></td>
+								</tr>
+							</table>
+					</form>
+					</div>
+					<div class="layout" style="margin: 10px;float:left;">
+						<button class="btn" id="relationshipBtn" on-click="getProduceVariableGrid">상관관계</button>
+						<br><br>
+						<button class="btn" id="dataInquiry">Data조회</button>
+					</div>	  	
+	  		</div>  	  
+    </px-card>
+  </template>
+</dom-module>
+
+<script>
+  Polymer({
+    is: 'my-energy-variable-select-grid-card',
+		
+		init : function () {
+			
+		},
+
+		
+		ready : function () {
+			var self = this;
+			this.getEnvironmentVariableGrid(uri);
+			this.getProduceVariableGrid(uri);
+		},
+		
+			createCell : function(cell, text, style) {
+		 			var div = document.createElement('div'), // create DIV element
+       	txt = document.createTextNode(text); // create text node
+    			div.appendChild(txt);                    // append text node to the DIV
+    			div.setAttribute('class', style);        // set DIV class attribute
+    			div.setAttribute('className', style);    // set DIV class attribute for IE (?!)
+    			cell.appendChild(div);                   // append DIV to the table cell
+    			cell.innerHTML = text;
+	},	
+	
+			getEnvironmentVariableGrid : function () {
+    		
+	},	
+		
+			getProduceVariableGrid : function () {
+				var numCheckBoxProduce;				
+				var produceTable = document.getElementById("produceVariableGrid");
+				var div = document.createElement('div');
+				var htmlStr;
+ 
+  		  for (i = 1; i < 3; i++) {
+  		  		if (i==1) {
+  		  				 htmlstr = 'variable';
+  		  			} 
+  		  		else if (i==2) {
+  		  				 htmlStr = '<input type="checkbox" name="chkProduce"/>'
+  		  			}
+        this.createCell(produceTable.rows[i].insertCell(produceTable.rows[i].cells.length), htmlStr, 'col');
+    		}
+    		
+	},
+	
+		checkAllEnvironment : function () {
+			var checkBox = environmentVariableForm.chk;
+			if(checkBox.length) {
+				for(var i=0; i<checkBox.length; i++) {
+					checkBox[i].checked=environmentVariableForm.chk_all.checked;				
+				}			
+			} else {
+				checkBox.checked = environmentVariableForm.chk_all.checked;
+			}
+		
+	},
+	
+		checkAllProduce : function () {
+			var checkBoxProduce = produceVariableForm.chkProduce;
+			if(checkBoxProduce.length) {
+				for(var i=0; i<checkBoxProduce.length; i++) {
+					checkBoxProduce[i].checked=produceVariableForm.chkProduce_all.checked;				
+				}			
+			} else {
+				checkBoxProduce.checked = produceVariableForm.chkProduce_all.checked;
+			}
+			
+		},
+		
+		dataInquiry : function () {
+			
+		},
+		
+			    
+    behaviors: [px.card]
+  });
+</script>

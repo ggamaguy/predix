@@ -1,0 +1,227 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-card/px-card.html"/>
+<link rel="import" href="../px-data-table/px-data-table.html"/>
+<link rel="import" href="../px-data-table/px-example-highlight.html"/>
+
+<script src="../moment/min/moment.min.js"></script>
+
+<dom-module id="my-emission-grid-card">
+<template>
+<px-card header-text={{title}}>
+<div class="card-header-links layout layout--right">
+	<div class="layout__item u-1/6">
+		<span style="float:right">
+			적용 년도 조회&nbsp;<select id="year-search"></select>
+			<button class="btn" id="search" on-click="searchData">조회</button>
+ 		</span><br><br>
+	</div>
+<div class="layout__item u-1/6">
+    <px-data-table id="emissionGrid" striped selectable selected-rows={{clickedR}}>
+    </px-data-table>
+</div>
+</px-card>
+</template>
+</dom-module>
+
+<script>
+Polymer({
+	is: 'my-emission-grid-card',
+	properties: {
+		gridData: {
+			type: Array,
+			notify: true
+		},
+		clickedR: {
+			type: Object,
+			notify: true
+		},
+		emissionUri: {
+			type: String,
+			reflectToAttributes: true,
+			value: "/asset-list/emission-factor",
+			notify: true
+		},
+		currentYear: {
+			type: String
+		},
+		uiRow: {
+			type: Array,
+			notify: true
+		},
+		uiColumn: {
+			type: Array,
+			notify: true
+		}
+    },
+    
+	ready: function() {
+		var self = this;
+		//this.hideCard();
+	
+		this.$.emissionGrid.addEventListener("px-row-click", function(e){
+			self.clickedR = e.detail.row.row;
+			console.log("select", self.clickedR);
+			console.log("code", self.clickedR.에너지코드.value);
+		});
+		
+		this.getGridData('/asset-list/emission-factor');
+		this.getYearData();
+	},
+	getYearData : function(){
+   			var self = this;
+   			var strYear= [];
+				var sYear=1900;
+			
+				self.currentYear = new Date().getFullYear();
+			   var select_year = document.getElementById("year-search");
+				
+					for(var i=self.currentYear; i>=sYear; i--){
+						strYear.push(i);
+					}
+			//	console.log("stryear", strYear);
+					 
+					for(index in strYear){
+		 				select_year.options[select_year.options.length] = new Option(strYear[index], index);
+		 			}
+	},	
+   deleteData : function(){
+		var self = this;
+		var energy_code = self.clickedR.에너지코드.value;
+		var emission_type = self.clickedR.배출구분코드.value;
+		var year = self.clickedR.연도.value;
+			
+		px.dealer.httpRequest({
+			url: '/api/asset/' + self.emissionUri + '/' + energy_code + emission_type + '-' + year,
+			method: 'DELETE',
+			data: self.clickedR
+		}).then(function(data){
+			//console.log(data);	
+			alert("삭제되었습니다.");
+			window.location.reload();	
+		});
+	}, 
+
+	getGridData: function(uri) {
+		var self = this;
+
+		this.getData('/api/datagrid' + uri).then(function(data) {
+		console.log("Grid data: " , data);
+			self.allData = data.tableData;
+			self.uiColumn = data.columns;
+			var uiData = [];
+			var current_uiColumn = [];
+			
+			
+			//console.log("column", data.columns[0].label);
+		
+			
+		//	for(var i=0, count=1; i<data.tableData.length; i++, count++) {
+		data.tableData.forEach(function(row){
+			self.uiRow = {};
+			
+			
+			data.columns.forEach(function(col){
+		
+			
+			  self.uiRow[col.label] = row[col.field]; //key:value
+			
+			
+			});
+			//console.log("uiRow", self.uiRow);
+		 	
+			 	if(self.uiRow.연도 == self.currentYear){
+			 	//console.log("get?", uiRow);
+			 	
+			 	current_uiColumn.push(self.uiRow);
+			 	self.$.emissionGrid.tableData = current_uiColumn;
+			 	}
+			 	else{}
+		})
+			
+			// console.log("uiData", uiData);
+		//	self.$.emissionGrid.tableData = uiData;
+			
+		});
+    },
+    searchData: function(){
+    		var self = this;
+    		
+			var selected_uiColumn = [];
+    		console.log("get???", self.allData);	
+    		console.log("column", self.uiColumn);
+			var input_year = document.getElementById("year-search");
+			var option_year = input_year.options[input_year.selectedIndex].text;
+			console.log("year", self.allData[0].year);
+			
+			self.allData.forEach(function(row){
+			var uiselectedRow = {};
+			
+			
+			self.uiColumn.forEach(function(col){
+		
+			
+			  uiselectedRow[col.label] = row[col.field]; //key:value
+			
+			});
+			
+			console.log("uiselected", uiselectedRow);
+			
+				for(var i=0; i<self.allData.length; i++){
+			    		
+    				if(uiselectedRow.연도 == option_year){
+						console.log("ok");
+						selected_uiColumn.push(uiselectedRow);
+					//	console.log("selected", selected_uiColumn);
+						self.$.emissionGrid.tableData = selected_uiColumn;
+					}else{}
+				
+			}
+			});
+    },
+	
+	// context is set for px-dashboard, which updates px-deck, which updates this px-card
+	contextChanged: function(newContext) {
+		// console.log('contextChanged: ' + JSON.stringify(newContext));
+	},
+    
+	deckStateChanged: function(newState, oldState) {
+    var self = this;
+    
+    if(newState.gridCommand != null){
+
+			if(newState.gridCommand == "inquiry"){
+        var parameter = "["+JSON.stringify(newState.parameters)+"]";
+
+        px.dealer.httpRequest({
+        url: '/api/datagrid/asset-list/emission-factor/full',
+        method: 'POST',
+        data:parameter
+        }).then(function(data){
+            console.log("[MinjuneL] i got the power "+JSON.stringify(data));
+            // on fulfillment
+            //console.log("Grid data: " , data);
+      			self.allData = data.tableData;
+      			var uiColumn = data.columns;
+      			var uiData = [];
+
+      			//console.log("column", data.columns[0].label);
+
+      		  data.tableData.forEach(function(row){
+      			     var uiRow = {};
+
+      			     data.columns.forEach(function(col){
+      			        uiRow[col.label] = row[col.field]; //key:value
+      			     });
+
+      			     uiData.push(uiRow);
+            });
+            self.$.emissionGrid.tableData = uiData;
+        });
+
+      }
+    }
+  },
+	
+    behaviors: [px.card]
+});
+</script>

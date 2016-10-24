@@ -1,0 +1,64 @@
+<link rel="import" href="../polymer/polymer.html" />
+<link rel="import" href="../px-card/px-card.html" />
+
+<dom-module id="my-energy-efficiency-inquiry-card">
+  <template>
+    <px-card header-text={{title}}>
+      <div class="layout" style="float: left;">
+					<div style='margin:5px;'>사업장</div>
+      </div>
+				<div class="layout" style="float: left;margin-top:5px;">
+					<div><select id="energy_efficiency_site"></select></div>
+				</div>
+				<div class="layout" style="float: left;margin-left:10px;">
+					<div style='margin:5px;'>설비 Unit Type</div>
+				</div>
+				<div class="layout" style="float: left;margin-top:5px;">
+					<div><select id="energy_efficiency_unit_type"></select></div>
+				</div>
+    </px-card>
+  </template>
+</dom-module>
+<script>
+  Polymer({
+    is: 'my-energy-efficiency-inquiry-card',
+    
+		 init: function() {
+
+  		  },
+	
+		 ready: function() {	
+				this.getMasterData('/codeinstance');
+		  },
+			
+			getMasterData: function(uri){
+					var self = this;
+					var arr_site = [];
+					var arr_unitType = [];
+				
+					this.getData('/api/asset' + uri).then(function(data) {
+				
+					for(i=0; i<data.length; i++){
+						if(data[i].classification == "/codeclassification/site"){
+								arr_site.push(data[i].value);
+		   		}else if(data[i].classification == "/codeclassification/unittype"){
+		   				arr_unitType.push(data[i].value);
+			   		}
+					}
+			
+		 			var select_site = document.getElementById("energy_efficiency_site");
+		 			var select_unitType = document.getElementById("energy_efficiency_unit_type");
+		 
+		 			for(index in arr_site){
+		 				select_site.options[select_site.options.length] = new Option(arr_site[index], index);
+		 			}
+		 			for(index in arr_unitType){
+		 				select_unitType.options[select_unitType.options.length] = new Option(arr_unitType[index], index);
+		 			}
+				});
+			},		  
+		      		
+    		
+    behaviors: [px.card]
+  });
+</script>
